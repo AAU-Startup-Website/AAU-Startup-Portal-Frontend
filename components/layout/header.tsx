@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { NotificationCenter } from "@/components/notifications/notification-center"
+} from "@/components/ui/dropdown-menu";
 import {
   Menu,
   User,
@@ -27,13 +26,13 @@ import {
   Briefcase,
   Trophy,
   Megaphone,
-} from "lucide-react"
+} from "lucide-react";
 
 interface HeaderProps {
-  userRole?: "founder" | "mentor" | "investor" | "admin" | null
-  userName?: string
-  userAvatar?: string
-  isAuthenticated?: boolean
+  userRole?: "founder" | "mentor" | "investor" | "admin" | null;
+  userName?: string;
+  userAvatar?: string;
+  isAuthenticated?: boolean;
 }
 
 const publicNavItems = [
@@ -44,12 +43,12 @@ const publicNavItems = [
   { href: "/events", label: "Events", icon: Calendar },
   { href: "/library", label: "Library", icon: BookOpen },
   { href: "/announcements", label: "Announcements", icon: Megaphone },
-]
+];
 
 const protectedPublicNavItems = [
   { href: "/cofounders", label: "Co-founders", icon: Users },
   { href: "/resources", label: "Resources", icon: BookOpen },
-]
+];
 
 const roleBasedNavItems = {
   founder: [
@@ -79,24 +78,29 @@ const roleBasedNavItems = {
     { href: "/startups", label: "Manage Startups", icon: Briefcase },
     { href: "/resources", label: "Manage Resources", icon: BookOpen },
   ],
-}
+};
 
-export function Header({ userRole, userName = "User", userAvatar, isAuthenticated = false }: HeaderProps) {
-  const [isOpen, setIsOpen] = useState(false)
+export function Header({
+  userRole,
+  userName = "User",
+  userAvatar,
+  isAuthenticated = false,
+}: HeaderProps) {
+  const [isOpen, setIsOpen] = useState(false);
 
   const getNavItems = () => {
     if (userRole && isAuthenticated) {
-      return roleBasedNavItems[userRole] || []
+      return roleBasedNavItems[userRole] || [];
     } else if (isAuthenticated) {
       // Authenticated but no role selected yet - show public + protected pages
-      return [...publicNavItems, ...protectedPublicNavItems]
+      return [...publicNavItems, ...protectedPublicNavItems];
     } else {
       // Not authenticated - show only public pages
-      return publicNavItems
+      return publicNavItems;
     }
-  }
+  };
 
-  const navItems = getNavItems()
+  const navItems = getNavItems();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -108,7 +112,9 @@ export function Header({ userRole, userName = "User", userAvatar, isAuthenticate
               <span className="text-white font-bold text-sm">AAU</span>
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-aau-blue">AAU Startups Portal</h1>
+              <h1 className="text-xl font-bold text-aau-blue">
+                AAU Startups Portal
+              </h1>
             </div>
           </Link>
         </div>
@@ -128,16 +134,19 @@ export function Header({ userRole, userName = "User", userAvatar, isAuthenticate
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-4">
-          {/* Notifications - only show for authenticated users */}
-          {isAuthenticated && <NotificationCenter />}
-
           {/* User Menu or Auth Buttons */}
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={userAvatar || "/placeholder.svg"} alt={userName} />
+                    <AvatarImage
+                      src={userAvatar || "/placeholder.svg"}
+                      alt={userName}
+                    />
                     <AvatarFallback className="bg-aau-blue text-white">
                       {userName.charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -147,7 +156,9 @@ export function Header({ userRole, userName = "User", userAvatar, isAuthenticate
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{userName}</p>
+                    <p className="text-sm font-medium leading-none">
+                      {userName}
+                    </p>
                     <p className="text-xs leading-none text-muted-foreground capitalize">
                       {userRole || "No role selected"}
                     </p>
@@ -199,7 +210,11 @@ export function Header({ userRole, userName = "User", userAvatar, isAuthenticate
                   </div>
                   <div>
                     <h2 className="font-semibold">AAU Startups Portal</h2>
-                    {userRole && <p className="text-sm text-muted-foreground capitalize">{userRole}</p>}
+                    {userRole && (
+                      <p className="text-sm text-muted-foreground capitalize">
+                        {userRole}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -224,7 +239,10 @@ export function Header({ userRole, userName = "User", userAvatar, isAuthenticate
                         Login
                       </Link>
                     </Button>
-                    <Button asChild className="bg-aau-blue hover:bg-aau-blue/90 justify-start">
+                    <Button
+                      asChild
+                      className="bg-aau-blue hover:bg-aau-blue/90 justify-start"
+                    >
                       <Link href="/register" onClick={() => setIsOpen(false)}>
                         Register
                       </Link>
@@ -237,5 +255,5 @@ export function Header({ userRole, userName = "User", userAvatar, isAuthenticate
         </div>
       </div>
     </header>
-  )
+  );
 }

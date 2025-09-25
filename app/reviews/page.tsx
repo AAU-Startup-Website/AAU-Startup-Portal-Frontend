@@ -1,15 +1,34 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -17,17 +36,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Separator } from "@/components/ui/separator"
-import { Progress } from "@/components/ui/progress"
-import { Search, Filter, Eye, CheckCircle, XCircle, Clock, Star, FileText } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import {
+  Search,
+  Filter,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Star,
+  FileText,
+} from "lucide-react";
 
 export default function ReviewsPage() {
-  const { toast } = useToast()
-  const [selectedApplication, setSelectedApplication] = useState<any>(null)
-  const [reviewFilter, setReviewFilter] = useState("all")
-  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [reviewFilter, setReviewFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const applications = [
     {
@@ -86,7 +112,7 @@ export default function ReviewsPage() {
       priority: "low",
       description: "Digital health monitoring application",
     },
-  ]
+  ];
 
   const reviewers = [
     "Dr. Samuel Getachew",
@@ -94,74 +120,73 @@ export default function ReviewsPage() {
     "Dr. Yohannes Assefa",
     "Prof. Tekle Ferede",
     "Dr. Hanan Ahmed",
-  ]
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "under_review":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "approved":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "rejected":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       case "medium":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "low":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const filteredApplications = applications.filter((app) => {
-    const matchesFilter = reviewFilter === "all" || app.status === reviewFilter
+    const matchesFilter = reviewFilter === "all" || app.status === reviewFilter;
     const matchesSearch =
       app.startupName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       app.founder.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.sector.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesFilter && matchesSearch
-  })
+      app.sector.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   const handleAssignReviewer = (appId: string, reviewer: string) => {
-    toast({
-      title: "Reviewer Assigned",
-      description: `${reviewer} has been assigned to review application ${appId}`,
-    })
-  }
+    // Assign reviewer logic here
+  };
 
   const handleStatusChange = (appId: string, newStatus: string) => {
-    toast({
-      title: "Status Updated",
-      description: `Application ${appId} status changed to ${newStatus}`,
-    })
-  }
+    // Status change logic here
+  };
 
   const stats = {
     total: applications.length,
     pending: applications.filter((app) => app.status === "pending").length,
-    underReview: applications.filter((app) => app.status === "under_review").length,
+    underReview: applications.filter((app) => app.status === "under_review")
+      .length,
     approved: applications.filter((app) => app.status === "approved").length,
     rejected: applications.filter((app) => app.status === "rejected").length,
     avgScore:
-      applications.filter((app) => app.score).reduce((acc, app) => acc + (app.score || 0), 0) /
+      applications
+        .filter((app) => app.score)
+        .reduce((acc, app) => acc + (app.score || 0), 0) /
       applications.filter((app) => app.score).length,
-  }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-aau-deep-blue mb-2">Application Review System</h1>
+        <h1 className="text-3xl font-bold text-aau-deep-blue mb-2">
+          Application Review System
+        </h1>
         <p className="text-stone">Manage and review startup applications</p>
       </div>
 
@@ -171,7 +196,9 @@ export default function ReviewsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-stone">Total Applications</p>
+                <p className="text-sm font-medium text-stone">
+                  Total Applications
+                </p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <FileText className="h-8 w-8 text-aau-deep-blue" />
@@ -184,7 +211,9 @@ export default function ReviewsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-stone">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+                <p className="text-2xl font-bold text-yellow-600">
+                  {stats.pending}
+                </p>
               </div>
               <Clock className="h-8 w-8 text-yellow-600" />
             </div>
@@ -196,7 +225,9 @@ export default function ReviewsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-stone">Under Review</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.underReview}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {stats.underReview}
+                </p>
               </div>
               <Eye className="h-8 w-8 text-blue-600" />
             </div>
@@ -208,7 +239,9 @@ export default function ReviewsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-stone">Approved</p>
-                <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {stats.approved}
+                </p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
@@ -220,7 +253,9 @@ export default function ReviewsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-stone">Rejected</p>
-                <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {stats.rejected}
+                </p>
               </div>
               <XCircle className="h-8 w-8 text-red-600" />
             </div>
@@ -232,7 +267,9 @@ export default function ReviewsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-stone">Avg Score</p>
-                <p className="text-2xl font-bold text-aau-gold">{stats.avgScore.toFixed(1)}</p>
+                <p className="text-2xl font-bold text-aau-gold">
+                  {stats.avgScore.toFixed(1)}
+                </p>
               </div>
               <Star className="h-8 w-8 text-aau-gold" />
             </div>
@@ -284,7 +321,9 @@ export default function ReviewsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Applications</CardTitle>
-              <CardDescription>Review and manage startup applications</CardDescription>
+              <CardDescription>
+                Review and manage startup applications
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -319,10 +358,14 @@ export default function ReviewsPage() {
                         <Badge variant="outline">{app.sector}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(app.status)}>{app.status.replace("_", " ")}</Badge>
+                        <Badge className={getStatusColor(app.status)}>
+                          {app.status.replace("_", " ")}
+                        </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getPriorityColor(app.priority)}>{app.priority}</Badge>
+                        <Badge className={getPriorityColor(app.priority)}>
+                          {app.priority}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {app.score ? (
@@ -338,7 +381,11 @@ export default function ReviewsPage() {
                         {app.reviewer ? (
                           <span className="text-sm">{app.reviewer}</span>
                         ) : (
-                          <Select onValueChange={(value) => handleAssignReviewer(app.id, value)}>
+                          <Select
+                            onValueChange={(value) =>
+                              handleAssignReviewer(app.id, value)
+                            }
+                          >
                             <SelectTrigger className="w-[150px]">
                               <SelectValue placeholder="Assign" />
                             </SelectTrigger>
@@ -356,34 +403,49 @@ export default function ReviewsPage() {
                         <div className="flex space-x-2">
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" onClick={() => setSelectedApplication(app)}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedApplication(app)}
+                              >
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle>{app.startupName} - Application Review</DialogTitle>
+                                <DialogTitle>
+                                  {app.startupName} - Application Review
+                                </DialogTitle>
                                 <DialogDescription>
-                                  Submitted on {app.submissionDate} by {app.founder}
+                                  Submitted on {app.submissionDate} by{" "}
+                                  {app.founder}
                                 </DialogDescription>
                               </DialogHeader>
                               {selectedApplication && (
                                 <div className="space-y-6">
                                   <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                      <Label className="text-sm font-medium">Startup Name</Label>
+                                      <Label className="text-sm font-medium">
+                                        Startup Name
+                                      </Label>
                                       <p>{selectedApplication.startupName}</p>
                                     </div>
                                     <div>
-                                      <Label className="text-sm font-medium">Founder</Label>
+                                      <Label className="text-sm font-medium">
+                                        Founder
+                                      </Label>
                                       <p>{selectedApplication.founder}</p>
                                     </div>
                                     <div>
-                                      <Label className="text-sm font-medium">Sector</Label>
+                                      <Label className="text-sm font-medium">
+                                        Sector
+                                      </Label>
                                       <p>{selectedApplication.sector}</p>
                                     </div>
                                     <div>
-                                      <Label className="text-sm font-medium">Stage</Label>
+                                      <Label className="text-sm font-medium">
+                                        Stage
+                                      </Label>
                                       <p>{selectedApplication.stage}</p>
                                     </div>
                                   </div>
@@ -391,12 +453,18 @@ export default function ReviewsPage() {
                                   <Separator />
 
                                   <div>
-                                    <Label className="text-sm font-medium">Description</Label>
-                                    <p className="mt-1">{selectedApplication.description}</p>
+                                    <Label className="text-sm font-medium">
+                                      Description
+                                    </Label>
+                                    <p className="mt-1">
+                                      {selectedApplication.description}
+                                    </p>
                                   </div>
 
                                   <div className="space-y-4">
-                                    <Label className="text-sm font-medium">Review Score</Label>
+                                    <Label className="text-sm font-medium">
+                                      Review Score
+                                    </Label>
                                     <div className="flex items-center space-x-4">
                                       <Input
                                         type="number"
@@ -411,25 +479,39 @@ export default function ReviewsPage() {
                                   </div>
 
                                   <div className="space-y-4">
-                                    <Label className="text-sm font-medium">Review Comments</Label>
-                                    <Textarea placeholder="Add your review comments..." rows={4} />
+                                    <Label className="text-sm font-medium">
+                                      Review Comments
+                                    </Label>
+                                    <Textarea
+                                      placeholder="Add your review comments..."
+                                      rows={4}
+                                    />
                                   </div>
 
                                   <div className="flex space-x-2">
                                     <Button
-                                      onClick={() => handleStatusChange(app.id, "approved")}
+                                      onClick={() =>
+                                        handleStatusChange(app.id, "approved")
+                                      }
                                       className="bg-green-600 hover:bg-green-700"
                                     >
                                       Approve
                                     </Button>
                                     <Button
-                                      onClick={() => handleStatusChange(app.id, "rejected")}
+                                      onClick={() =>
+                                        handleStatusChange(app.id, "rejected")
+                                      }
                                       variant="destructive"
                                     >
                                       Reject
                                     </Button>
                                     <Button
-                                      onClick={() => handleStatusChange(app.id, "under_review")}
+                                      onClick={() =>
+                                        handleStatusChange(
+                                          app.id,
+                                          "under_review"
+                                        )
+                                      }
                                       variant="outline"
                                     >
                                       Request More Info
@@ -453,29 +535,45 @@ export default function ReviewsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Reviewer Management</CardTitle>
-              <CardDescription>Manage reviewer assignments and workload</CardDescription>
+              <CardDescription>
+                Manage reviewer assignments and workload
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {reviewers.map((reviewer) => {
-                  const assignedApps = applications.filter((app) => app.reviewer === reviewer)
+                  const assignedApps = applications.filter(
+                    (app) => app.reviewer === reviewer
+                  );
                   const avgScore =
                     assignedApps.length > 0
-                      ? assignedApps.reduce((acc, app) => acc + (app.score || 0), 0) / assignedApps.length
-                      : 0
+                      ? assignedApps.reduce(
+                          (acc, app) => acc + (app.score || 0),
+                          0
+                        ) / assignedApps.length
+                      : 0;
 
                   return (
-                    <div key={reviewer} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={reviewer}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div>
                         <h3 className="font-semibold">{reviewer}</h3>
-                        <p className="text-sm text-stone">{assignedApps.length} applications assigned</p>
+                        <p className="text-sm text-stone">
+                          {assignedApps.length} applications assigned
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium">Avg Score: {avgScore.toFixed(1)}</p>
-                        <Badge variant="outline">{assignedApps.length} active</Badge>
+                        <p className="text-sm font-medium">
+                          Avg Score: {avgScore.toFixed(1)}
+                        </p>
+                        <Badge variant="outline">
+                          {assignedApps.length} active
+                        </Badge>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </CardContent>
@@ -510,22 +608,26 @@ export default function ReviewsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {["FinTech", "Agriculture", "EdTech", "HealthTech"].map((sector) => {
-                    const count = applications.filter((app) => app.sector === sector).length
-                    const percentage = (count / applications.length) * 100
+                  {["FinTech", "Agriculture", "EdTech", "HealthTech"].map(
+                    (sector) => {
+                      const count = applications.filter(
+                        (app) => app.sector === sector
+                      ).length;
+                      const percentage = (count / applications.length) * 100;
 
-                    return (
-                      <div key={sector} className="space-y-2">
-                        <div className="flex justify-between">
-                          <span>{sector}</span>
-                          <span>
-                            {count} ({percentage.toFixed(0)}%)
-                          </span>
+                      return (
+                        <div key={sector} className="space-y-2">
+                          <div className="flex justify-between">
+                            <span>{sector}</span>
+                            <span>
+                              {count} ({percentage.toFixed(0)}%)
+                            </span>
+                          </div>
+                          <Progress value={percentage} />
                         </div>
-                        <Progress value={percentage} />
-                      </div>
-                    )
-                  })}
+                      );
+                    }
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -533,5 +635,5 @@ export default function ReviewsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

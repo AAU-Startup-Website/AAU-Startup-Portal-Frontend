@@ -1,23 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Mail, Shield, Key, Trash2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Mail, Shield, Key, Trash2 } from "lucide-react";
 
 export default function ProfilePage() {
-  const { toast } = useToast()
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     firstName: "Abebe",
     lastName: "Kebede",
@@ -31,7 +41,7 @@ export default function ProfilePage() {
     linkedin: "https://linkedin.com/in/abebekebede",
     github: "https://github.com/abebekebede",
     website: "https://abebekebede.com",
-  })
+  });
 
   const [notifications, setNotifications] = useState({
     emailUpdates: true,
@@ -39,29 +49,25 @@ export default function ProfilePage() {
     eventReminders: true,
     applicationStatus: true,
     weeklyDigest: false,
-  })
+  });
 
   const handleSave = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been successfully updated.",
-    })
-    setIsEditing(false)
-  }
+    setIsEditing(false);
+  };
 
   const handleNotificationChange = (key: string, value: boolean) => {
-    setNotifications((prev) => ({ ...prev, [key]: value }))
-    toast({
-      title: "Notification Settings Updated",
-      description: `${key} notifications ${value ? "enabled" : "disabled"}.`,
-    })
-  }
+    setNotifications((prev) => ({ ...prev, [key]: value }));
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-aau-deep-blue mb-2">Profile & Settings</h1>
-        <p className="text-stone">Manage your account information and preferences</p>
+        <h1 className="text-3xl font-bold text-aau-deep-blue mb-2">
+          Profile & Settings
+        </h1>
+        <p className="text-stone">
+          Manage your account information and preferences
+        </p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
@@ -78,11 +84,15 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Personal Information</CardTitle>
-                  <CardDescription>Update your personal details and contact information</CardDescription>
+                  <CardDescription>
+                    Update your personal details and contact information
+                  </CardDescription>
                 </div>
                 <Button
                   variant={isEditing ? "default" : "outline"}
-                  onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+                  onClick={() =>
+                    isEditing ? handleSave() : setIsEditing(true)
+                  }
                 >
                   {isEditing ? "Save Changes" : "Edit Profile"}
                 </Button>
@@ -118,7 +128,12 @@ export default function ProfilePage() {
                   <Input
                     id="firstName"
                     value={profile.firstName}
-                    onChange={(e) => setProfile((prev) => ({ ...prev, firstName: e.target.value }))}
+                    onChange={(e) =>
+                      setProfile((prev) => ({
+                        ...prev,
+                        firstName: e.target.value,
+                      }))
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -127,7 +142,12 @@ export default function ProfilePage() {
                   <Input
                     id="lastName"
                     value={profile.lastName}
-                    onChange={(e) => setProfile((prev) => ({ ...prev, lastName: e.target.value }))}
+                    onChange={(e) =>
+                      setProfile((prev) => ({
+                        ...prev,
+                        lastName: e.target.value,
+                      }))
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -137,7 +157,9 @@ export default function ProfilePage() {
                     id="email"
                     type="email"
                     value={profile.email}
-                    onChange={(e) => setProfile((prev) => ({ ...prev, email: e.target.value }))}
+                    onChange={(e) =>
+                      setProfile((prev) => ({ ...prev, email: e.target.value }))
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -146,7 +168,9 @@ export default function ProfilePage() {
                   <Input
                     id="phone"
                     value={profile.phone}
-                    onChange={(e) => setProfile((prev) => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) =>
+                      setProfile((prev) => ({ ...prev, phone: e.target.value }))
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -154,14 +178,18 @@ export default function ProfilePage() {
                   <Label htmlFor="department">Department</Label>
                   <Select
                     value={profile.department}
-                    onValueChange={(value) => setProfile((prev) => ({ ...prev, department: value }))}
+                    onValueChange={(value) =>
+                      setProfile((prev) => ({ ...prev, department: value }))
+                    }
                     disabled={!isEditing}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Computer Science">Computer Science</SelectItem>
+                      <SelectItem value="Computer Science">
+                        Computer Science
+                      </SelectItem>
                       <SelectItem value="Engineering">Engineering</SelectItem>
                       <SelectItem value="Business">Business</SelectItem>
                       <SelectItem value="Medicine">Medicine</SelectItem>
@@ -173,7 +201,9 @@ export default function ProfilePage() {
                   <Label htmlFor="yearOfStudy">Year of Study</Label>
                   <Select
                     value={profile.yearOfStudy}
-                    onValueChange={(value) => setProfile((prev) => ({ ...prev, yearOfStudy: value }))}
+                    onValueChange={(value) =>
+                      setProfile((prev) => ({ ...prev, yearOfStudy: value }))
+                    }
                     disabled={!isEditing}
                   >
                     <SelectTrigger>
@@ -196,7 +226,9 @@ export default function ProfilePage() {
                 <Textarea
                   id="bio"
                   value={profile.bio}
-                  onChange={(e) => setProfile((prev) => ({ ...prev, bio: e.target.value }))}
+                  onChange={(e) =>
+                    setProfile((prev) => ({ ...prev, bio: e.target.value }))
+                  }
                   disabled={!isEditing}
                   rows={3}
                   placeholder="Tell us about yourself and your interests..."
@@ -208,7 +240,12 @@ export default function ProfilePage() {
                 <Input
                   id="location"
                   value={profile.location}
-                  onChange={(e) => setProfile((prev) => ({ ...prev, location: e.target.value }))}
+                  onChange={(e) =>
+                    setProfile((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
                   disabled={!isEditing}
                 />
               </div>
@@ -223,7 +260,12 @@ export default function ProfilePage() {
                     <Input
                       id="linkedin"
                       value={profile.linkedin}
-                      onChange={(e) => setProfile((prev) => ({ ...prev, linkedin: e.target.value }))}
+                      onChange={(e) =>
+                        setProfile((prev) => ({
+                          ...prev,
+                          linkedin: e.target.value,
+                        }))
+                      }
                       disabled={!isEditing}
                       placeholder="https://linkedin.com/in/username"
                     />
@@ -233,7 +275,12 @@ export default function ProfilePage() {
                     <Input
                       id="github"
                       value={profile.github}
-                      onChange={(e) => setProfile((prev) => ({ ...prev, github: e.target.value }))}
+                      onChange={(e) =>
+                        setProfile((prev) => ({
+                          ...prev,
+                          github: e.target.value,
+                        }))
+                      }
                       disabled={!isEditing}
                       placeholder="https://github.com/username"
                     />
@@ -244,7 +291,12 @@ export default function ProfilePage() {
                   <Input
                     id="website"
                     value={profile.website}
-                    onChange={(e) => setProfile((prev) => ({ ...prev, website: e.target.value }))}
+                    onChange={(e) =>
+                      setProfile((prev) => ({
+                        ...prev,
+                        website: e.target.value,
+                      }))
+                    }
                     disabled={!isEditing}
                     placeholder="https://yourwebsite.com"
                   />
@@ -258,7 +310,9 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Choose how you want to be notified about important updates</CardDescription>
+              <CardDescription>
+                Choose how you want to be notified about important updates
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {Object.entries({
@@ -272,16 +326,23 @@ export default function ProfilePage() {
                   <div className="space-y-0.5">
                     <Label>{label}</Label>
                     <p className="text-sm text-stone">
-                      {key === "emailUpdates" && "Receive important updates via email"}
-                      {key === "mentorMessages" && "Get notified when mentors send messages"}
-                      {key === "eventReminders" && "Reminders for upcoming events"}
-                      {key === "applicationStatus" && "Updates on your application status"}
-                      {key === "weeklyDigest" && "Weekly summary of portal activity"}
+                      {key === "emailUpdates" &&
+                        "Receive important updates via email"}
+                      {key === "mentorMessages" &&
+                        "Get notified when mentors send messages"}
+                      {key === "eventReminders" &&
+                        "Reminders for upcoming events"}
+                      {key === "applicationStatus" &&
+                        "Updates on your application status"}
+                      {key === "weeklyDigest" &&
+                        "Weekly summary of portal activity"}
                     </p>
                   </div>
                   <Switch
                     checked={notifications[key as keyof typeof notifications]}
-                    onCheckedChange={(checked) => handleNotificationChange(key, checked)}
+                    onCheckedChange={(checked) =>
+                      handleNotificationChange(key, checked)
+                    }
                   />
                 </div>
               ))}
@@ -293,19 +354,30 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle>Security Settings</CardTitle>
-              <CardDescription>Manage your account security and privacy</CardDescription>
+              <CardDescription>
+                Manage your account security and privacy
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <Button variant="outline" className="w-full justify-start bg-transparent">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start bg-transparent"
+                >
                   <Key className="mr-2 h-4 w-4" />
                   Change Password
                 </Button>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start bg-transparent"
+                >
                   <Shield className="mr-2 h-4 w-4" />
                   Two-Factor Authentication
                 </Button>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start bg-transparent"
+                >
                   <Mail className="mr-2 h-4 w-4" />
                   Email Verification
                 </Button>
@@ -328,7 +400,9 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle>Application Preferences</CardTitle>
-              <CardDescription>Customize your portal experience</CardDescription>
+              <CardDescription>
+                Customize your portal experience
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -352,7 +426,9 @@ export default function ProfilePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="africa/addis_ababa">Africa/Addis Ababa (EAT)</SelectItem>
+                      <SelectItem value="africa/addis_ababa">
+                        Africa/Addis Ababa (EAT)
+                      </SelectItem>
                       <SelectItem value="utc">UTC</SelectItem>
                     </SelectContent>
                   </Select>
@@ -377,5 +453,5 @@ export default function ProfilePage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
