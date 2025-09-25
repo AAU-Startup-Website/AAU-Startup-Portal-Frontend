@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -24,23 +24,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Shield, Key, Trash2 } from "lucide-react";
+import { Mail, Shield, Key, Trash2, Loader2 } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-context";
+import { supabase } from "@/api/client";
 
 export default function ProfilePage() {
+  const { user, refreshProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [profile, setProfile] = useState({
-    firstName: "Abebe",
-    lastName: "Kebede",
-    email: "abebe.kebede@aau.edu.et",
-    phone: "+251911234567",
-    role: "founder",
-    department: "Computer Science",
-    yearOfStudy: "4th Year",
-    bio: "Passionate entrepreneur working on fintech solutions for Ethiopia. Interested in mobile payments and financial inclusion.",
-    location: "Addis Ababa, Ethiopia",
-    linkedin: "https://linkedin.com/in/abebekebede",
-    github: "https://github.com/abebekebede",
-    website: "https://abebekebede.com",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    role: "",
+    department: "",
+    yearOfStudy: "",
+    bio: "",
+    location: "",
+    linkedin: "",
+    github: "",
+    website: "",
   });
 
   const [notifications, setNotifications] = useState({
@@ -51,8 +55,80 @@ export default function ProfilePage() {
     weeklyDigest: false,
   });
 
-  const handleSave = () => {
-    setIsEditing(false);
+  // Load user profile data
+  useEffect(() => {
+    if (user) {
+      const loadProfile = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          if (error) {
+            console.error("Error loading profile:", error);
+            return;
+          }
+
+          if (data) {
+            setProfile({
+              firstName: data.first_name || "",
+              lastName: data.last_name || "",
+              email: data.email || user.email || "",
+              phone: data.phone || "",
+              role: data.role || user.role || "",
+              department: data.department || "",
+              yearOfStudy: data.year_of_study || "",
+              bio: data.bio || "",
+              location: data.location || "",
+              linkedin: data.linkedin || "",
+              github: data.github || "",
+              website: data.website || "",
+            });
+          }
+        } catch (error) {
+          console.error("Error loading profile:", error);
+        }
+      };
+
+      loadProfile();
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({
+          first_name: profile.firstName,
+          last_name: profile.lastName,
+          phone: profile.phone,
+          department: profile.department,
+          year_of_study: profile.yearOfStudy,
+          bio: profile.bio,
+          location: profile.location,
+          linkedin: profile.linkedin,
+          github: profile.github,
+          website: profile.website,
+        })
+        .eq("id", user.id);
+
+      if (error) {
+        console.error("Error updating profile:", error);
+        return;
+      }
+
+      await refreshProfile();
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleNotificationChange = (key: string, value: boolean) => {
@@ -93,29 +169,41 @@ export default function ProfilePage() {
                   onClick={() =>
                     isEditing ? handleSave() : setIsEditing(true)
                   }
+                  disabled={isLoading}
                 >
-                  {isEditing ? "Save Changes" : "Edit Profile"}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : isEditing ? (
+                    "Save Changes"
+                  ) : (
+                    "Edit Profile"
+                  )}
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src="/professional-headshot.png" />
+                  <AvatarImage src={user?.avatar || "/placeholder.svg"} />
                   <AvatarFallback className="text-lg">
-                    {profile.firstName[0]}
-                    {profile.lastName[0]}
+                    {profile.firstName?.[0] || user?.name?.[0] || "U"}
+                    {profile.lastName?.[0] || ""}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {profile.firstName} {profile.lastName}
+                    {profile.firstName || user?.name || "User"}{" "}
+                    {profile.lastName || ""}
                   </h3>
                   <Badge variant="secondary" className="capitalize">
-                    {profile.role}
+                    {profile.role || user?.role || "No role"}
                   </Badge>
                   <p className="text-sm text-stone mt-1">
-                    {profile.department} • {profile.yearOfStudy}
+                    {profile.department || user?.department || "No department"}{" "}
+                    • {profile.yearOfStudy || "Not specified"}
                   </p>
                 </div>
               </div>

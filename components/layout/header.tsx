@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/components/auth/auth-context";
 import {
   Menu,
   User,
@@ -27,13 +28,6 @@ import {
   Trophy,
   Megaphone,
 } from "lucide-react";
-
-interface HeaderProps {
-  userRole?: "founder" | "mentor" | "investor" | "admin" | null;
-  userName?: string;
-  userAvatar?: string;
-  isAuthenticated?: boolean;
-}
 
 const publicNavItems = [
   { href: "/", label: "Home", icon: Home },
@@ -80,13 +74,22 @@ const roleBasedNavItems = {
   ],
 };
 
-export function Header({
-  userRole,
-  userName = "User",
-  userAvatar,
-  isAuthenticated = false,
-}: HeaderProps) {
+export function Header() {
+  const { user, isAuthenticated, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+
+  const userRole = user?.role;
+  const userName = user?.name || "User";
+  const userAvatar = user?.avatar;
+
+  // Generate initials from user name
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
+  };
 
   const getNavItems = () => {
     if (userRole && isAuthenticated) {
@@ -101,6 +104,14 @@ export function Header({
   };
 
   const navItems = getNavItems();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -138,22 +149,22 @@ export function Header({
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-8 w-8 rounded-full"
+                <button
+                  type="button"
+                  className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage
                       src={userAvatar || "/placeholder.svg"}
                       alt={userName}
                     />
-                    <AvatarFallback className="bg-aau-blue text-white">
-                      {userName.charAt(0).toUpperCase()}
+                    <AvatarFallback className="bg-aau-blue text-white text-sm">
+                      {getInitials(userName)}
                     </AvatarFallback>
                   </Avatar>
-                </Button>
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-56" align="end">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
@@ -178,7 +189,7 @@ export function Header({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
