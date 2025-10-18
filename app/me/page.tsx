@@ -26,7 +26,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Shield, Key, Trash2, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
-import { supabase } from "@/api/client";
 
 export default function ProfilePage() {
   const { user, refreshProfile } = useAuth();
@@ -58,41 +57,22 @@ export default function ProfilePage() {
   // Load user profile data
   useEffect(() => {
     if (user) {
-      const loadProfile = async () => {
-        try {
-          const { data, error } = await supabase
-            .from("users")
-            .select("*")
-            .eq("id", user.id)
-            .single();
-
-          if (error) {
-            console.error("Error loading profile:", error);
-            return;
-          }
-
-          if (data) {
-            setProfile({
-              firstName: data.first_name || "",
-              lastName: data.last_name || "",
-              email: data.email || user.email || "",
-              phone: data.phone || "",
-              role: data.role || user.role || "",
-              department: data.department || "",
-              yearOfStudy: data.year_of_study || "",
-              bio: data.bio || "",
-              location: data.location || "",
-              linkedin: data.linkedin || "",
-              github: data.github || "",
-              website: data.website || "",
-            });
-          }
-        } catch (error) {
-          console.error("Error loading profile:", error);
-        }
-      };
-
-      loadProfile();
+      // Load profile from user data (mock implementation)
+      const nameParts = user.name?.split(' ') || [];
+      setProfile({
+        firstName: nameParts[0] || "",
+        lastName: nameParts.slice(1).join(' ') || "",
+        email: user.email || "",
+        phone: "",
+        role: user.role || "",
+        department: user.department || "",
+        yearOfStudy: "",
+        bio: "",
+        location: "",
+        linkedin: "",
+        github: "",
+        website: "",
+      });
     }
   }, [user]);
 
@@ -101,27 +81,17 @@ export default function ProfilePage() {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from("users")
-        .update({
-          first_name: profile.firstName,
-          last_name: profile.lastName,
-          phone: profile.phone,
-          department: profile.department,
-          year_of_study: profile.yearOfStudy,
-          bio: profile.bio,
-          location: profile.location,
-          linkedin: profile.linkedin,
-          github: profile.github,
-          website: profile.website,
-        })
-        .eq("id", user.id);
-
-      if (error) {
-        console.error("Error updating profile:", error);
-        return;
-      }
-
+      // Mock save - in a real app, this would call your API
+      console.log("Saving profile:", profile);
+      
+      // Update local storage with new profile data
+      const updatedUser = {
+        ...user,
+        name: [profile.firstName, profile.lastName].filter(Boolean).join(' '),
+        department: profile.department,
+      };
+      localStorage.setItem("auth_user", JSON.stringify(updatedUser));
+      
       await refreshProfile();
       setIsEditing(false);
     } catch (error) {

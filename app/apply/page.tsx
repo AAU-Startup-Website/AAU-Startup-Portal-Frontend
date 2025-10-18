@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Clock, Users, Target } from "lucide-react";
-import { supabase } from "@/api/client";
 
 export default function ApplyPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -153,15 +152,14 @@ export default function ApplyPage() {
 
   const handleSubmit = async (formData: any) => {
     try {
-      // Get current user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
+      // Get current user from localStorage (mock implementation)
+      const storedUser = localStorage.getItem("auth_user");
+      if (!storedUser) {
         alert("Please log in to submit an application");
         return;
       }
+
+      const user = JSON.parse(storedUser);
 
       // Prepare submission data
       const submissionData = {
