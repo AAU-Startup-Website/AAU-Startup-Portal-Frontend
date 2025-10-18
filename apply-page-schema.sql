@@ -174,13 +174,39 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers for updated_at
-DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
-CREATE TRIGGER update_users_updated_at
-  BEFORE UPDATE ON public.users
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+-- Create cofounders table
+CREATE TABLE IF NOT EXISTS public.cofounders (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  name text NOT NULL,
+  role text NOT NULL,
+  bio text,
+  image_url text,
+  location text,
+  skills text[], -- Array of skills
+  experience text,
+  looking_for text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
 
-DROP TRIGGER IF EXISTS update_applications_updated_at ON public.applications;
-CREATE TRIGGER update_applications_updated_at
-  BEFORE UPDATE ON public.applications
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+  CONSTRAINT cofounders_pkey PRIMARY KEY (id)
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_cofounders_location ON public.cofounders(location);
+CREATE INDEX IF NOT EXISTS idx_cofounders_looking_for ON public.cofounders(looking_for);
+CREATE INDEX IF NOT EXISTS idx_cofounders_created_at ON public.cofounders(created_at);
+
+-- Enable Row Level Security
+ALTER TABLE public.cofounders ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for cofounders table
+DROP POLICY IF EXISTS "Anyone can view cofounders" ON public.cofounders;
+CREATE POLICY "Anyone can view cofounders" ON public.cofounders
+  FOR SELECT USING (true);
+
+-- Insert sample cofounders data
+INSERT INTO public.cofounders (name, role, bio, image_url, location, skills, experience, looking_for) VALUES
+('Sarah Johnson', 'Full-Stack Developer', 'Passionate about fintech solutions for emerging markets', '/placeholder.svg?height=40&width=40', 'Addis Ababa', ARRAY['React', 'Node.js', 'Python'], '3 years', 'Technical Co-founder'),
+('Michael Chen', 'Business Development', 'Expert in scaling startups across African markets', '/placeholder.svg?height=40&width=40', 'Addis Ababa', ARRAY['Marketing', 'Sales', 'Strategy'], '5 years', 'Technical Co-founder'),
+('Aisha Mohammed', 'Product Designer', 'Designing inclusive products for diverse communities', '/placeholder.svg?height=40&width=40', 'Addis Ababa', ARRAY['UI/UX', 'Figma', 'Research'], '4 years', 'Business Co-founder')
+ON CONFLICT DO NOTHING;
