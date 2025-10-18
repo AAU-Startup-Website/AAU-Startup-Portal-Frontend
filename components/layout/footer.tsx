@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator"
 
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/50">
+    <footer className="border-t bg-muted/50 mt-10">
       <div className="container mx-auto max-w-7xl px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* AAU Branding */}
