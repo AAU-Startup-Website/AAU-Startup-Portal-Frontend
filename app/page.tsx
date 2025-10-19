@@ -22,25 +22,32 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Custom styles for the image slider */}
+      {/* Custom styles for the faster, smoother image slider */}
       <style jsx>{`
-        @keyframes slide-fade-in-out {
+        @keyframes fast-slide-in-out {
+          /* 1. Slide in and fade in for the first 8% of the animation */
           0% {
             opacity: 0;
             transform: translateX(100%);
           }
-          10% {
+          8% {
             opacity: 1;
             transform: translateX(0%);
           }
-          25% {
+
+          /* 2. Hold the image on screen until 33% */
+          33% {
             opacity: 1;
             transform: translateX(0%);
           }
-          35% {
+
+          /* 3. Slide out and fade out until 41% */
+          41% {
             opacity: 0;
             transform: translateX(-100%);
           }
+
+          /* 4. Remain hidden for the rest of the cycle */
           100% {
             opacity: 0;
             transform: translateX(-100%);
@@ -48,21 +55,26 @@ export default function HomePage() {
         }
 
         .hero-image-slide {
-          animation: slide-fade-in-out 30s infinite; /* 30s for the total cycle, adjust as needed */
+          /*
+            - Total cycle is now 12s instead of 30s.
+            - "ease-in-out" is added for a smoother sliding effect.
+          */
+          animation: fast-slide-in-out 12s ease-in-out infinite;
         }
 
-        /* Adjust delay for each image */
+        /* Adjust delay for each image based on the new 12s duration */
+        /* 12s total / 4 images = 3s delay between each slide */
         .hero-image-slide:nth-child(1) {
           animation-delay: 0s;
         }
         .hero-image-slide:nth-child(2) {
-          animation-delay: 7.5s; /* 30s / 4 images = 7.5s per image visibility */
+          animation-delay: 3s;
         }
         .hero-image-slide:nth-child(3) {
-          animation-delay: 15s;
+          animation-delay: 6s;
         }
         .hero-image-slide:nth-child(4) {
-          animation-delay: 22.5s;
+          animation-delay: 9s;
         }
       `}</style>
 
