@@ -329,7 +329,7 @@ export default function HomePage() {
                 size="lg"
                 variant="outline"
                 asChild
-                className="border-white text-white hover:bg-white hover:text-aau-blue bg-transparent"
+                className="border-white text-white hover:text-aau-blue bg-transparent"
               >
                 <Link href="/cofounders">Find Co-founders</Link>
               </Button>
