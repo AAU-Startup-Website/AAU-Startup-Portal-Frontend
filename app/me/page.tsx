@@ -25,26 +25,33 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Shield, Key, Trash2, Loader2 } from "lucide-react";
-import { useAuth } from "@/components/auth/auth-context";
+import withAuth from "@/components/auth/withAuth";
+import { getProfile, updateProfile } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 
-export default function ProfilePage() {
-  const { user, refreshProfile } = useAuth();
+// Expanded Profile interface to include all form fields
+interface Profile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  role: string;
+  department: string;
+  yearOfStudy: string;
+  bio: string;
+  location: string;
+  linkedin: string;
+  github: string;
+  website: string;
+  skills: string; // From original API spec
+}
+
+function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [profile, setProfile] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    role: "",
-    department: "",
-    yearOfStudy: "",
-    bio: "",
-    location: "",
-    linkedin: "",
-    github: "",
-    website: "",
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [editedProfile, setEditedProfile] = useState<Profile | null>(null);
 
   const [notifications, setNotifications] = useState({
     emailUpdates: true,
@@ -54,56 +61,100 @@ export default function ProfilePage() {
     weeklyDigest: false,
   });
 
-  // Load user profile data
   useEffect(() => {
-    if (user) {
-      // Load profile from user data (mock implementation)
-      const nameParts = user.name?.split(' ') || [];
-      setProfile({
-        firstName: nameParts[0] || "",
-        lastName: nameParts.slice(1).join(' ') || "",
-        email: user.email || "",
-        phone: "",
-        role: user.role || "",
-        department: user.department || "",
-        yearOfStudy: "",
-        bio: "",
-        location: "",
-        linkedin: "",
-        github: "",
-        website: "",
-      });
-    }
-  }, [user]);
+    const fetchProfile = async () => {
+      const token = getToken();
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const data = await getProfile(token);
+        const nameParts = data.username?.split(" ") || [];
+        const formattedProfile: Profile = {
+          firstName: nameParts[0] || "",
+          lastName: nameParts.slice(1).join(" ") || "",
+          email: data.email || "",
+          phone: data.profile?.phone || "",
+          role: data.profile?.role || "",
+          department: data.profile?.department || "",
+          yearOfStudy: data.profile?.yearOfStudy || "",
+          bio: data.profile?.bio || "",
+          location: data.profile?.location || "",
+          linkedin: data.profile?.linkedin || "",
+          github: data.profile?.github || "",
+          website: data.profile?.website || "",
+          skills: data.profile?.skills || "",
+        };
+        setProfile(formattedProfile);
+        setEditedProfile(formattedProfile);
+      } catch (error) {
+        console.error("Failed to fetch profile", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleSave = async () => {
-    if (!user) return;
+    const token = getToken();
+    if (!token || !editedProfile) return;
 
-    setIsLoading(true);
+    setIsSaving(true);
     try {
-      // Mock save - in a real app, this would call your API
-      console.log("Saving profile:", profile);
-      
-      // Update local storage with new profile data
-      const updatedUser = {
-        ...user,
-        name: [profile.firstName, profile.lastName].filter(Boolean).join(' '),
-        department: profile.department,
+      const payload = {
+        username: `${editedProfile.firstName} ${editedProfile.lastName}`.trim(),
+        email: editedProfile.email,
+        profile: {
+          bio: editedProfile.bio,
+          role: editedProfile.role,
+          skills: editedProfile.skills,
+          department: editedProfile.department,
+          yearOfStudy: editedProfile.yearOfStudy,
+          location: editedProfile.location,
+          linkedin: editedProfile.linkedin,
+          github: editedProfile.github,
+          website: editedProfile.website,
+        },
       };
-      localStorage.setItem("auth_user", JSON.stringify(updatedUser));
-      
-      await refreshProfile();
+      await updateProfile(token, payload);
+      setProfile(editedProfile);
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving profile:", error);
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setEditedProfile(profile);
+    setIsEditing(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (!editedProfile) return;
+    const { id, value } = e.target;
+    setEditedProfile((prev) => (prev ? { ...prev, [id]: value } : null));
+  };
+
+  const handleSelectChange = (id: keyof Profile, value: string) => {
+    if (!editedProfile) return;
+    setEditedProfile((prev) => (prev ? { ...prev, [id]: value } : null));
   };
 
   const handleNotificationChange = (key: string, value: boolean) => {
     setNotifications((prev) => ({ ...prev, [key]: value }));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -134,46 +185,48 @@ export default function ProfilePage() {
                     Update your personal details and contact information
                   </CardDescription>
                 </div>
-                <Button
-                  variant={isEditing ? "default" : "outline"}
-                  onClick={() =>
-                    isEditing ? handleSave() : setIsEditing(true)
-                  }
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : isEditing ? (
-                    "Save Changes"
-                  ) : (
-                    "Edit Profile"
+                <div className="flex gap-2">
+                  {isEditing && (
+                    <Button
+                      variant="outline"
+                      onClick={handleCancel}
+                      disabled={isSaving}
+                    >
+                      Cancel
+                    </Button>
                   )}
-                </Button>
+                  <Button
+                    onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                    ) : isEditing ? (
+                      "Save Changes"
+                    ) : (
+                      "Edit Profile"
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={user?.avatar || "/placeholder.svg"} />
+                  <AvatarImage src="/placeholder.svg" />
                   <AvatarFallback className="text-lg">
-                    {profile.firstName?.[0] || user?.name?.[0] || "U"}
-                    {profile.lastName?.[0] || ""}
+                    {profile?.firstName?.[0] || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {profile.firstName || user?.name || "User"}{" "}
-                    {profile.lastName || ""}
+                    {profile?.firstName} {profile?.lastName}
                   </h3>
                   <Badge variant="secondary" className="capitalize">
-                    {profile.role || user?.role || "No role"}
+                    {profile?.role}
                   </Badge>
                   <p className="text-sm text-stone mt-1">
-                    {profile.department || user?.department || "No department"}{" "}
-                    • {profile.yearOfStudy || "Not specified"}
+                    {profile?.department} • {profile?.yearOfStudy}
                   </p>
                 </div>
               </div>
@@ -185,13 +238,8 @@ export default function ProfilePage() {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    value={profile.firstName}
-                    onChange={(e) =>
-                      setProfile((prev) => ({
-                        ...prev,
-                        firstName: e.target.value,
-                      }))
-                    }
+                    value={editedProfile?.firstName || ""}
+                    onChange={handleInputChange}
                     disabled={!isEditing}
                   />
                 </div>
@@ -199,13 +247,8 @@ export default function ProfilePage() {
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    value={profile.lastName}
-                    onChange={(e) =>
-                      setProfile((prev) => ({
-                        ...prev,
-                        lastName: e.target.value,
-                      }))
-                    }
+                    value={editedProfile?.lastName || ""}
+                    onChange={handleInputChange}
                     disabled={!isEditing}
                   />
                 </div>
@@ -214,10 +257,8 @@ export default function ProfilePage() {
                   <Input
                     id="email"
                     type="email"
-                    value={profile.email}
-                    onChange={(e) =>
-                      setProfile((prev) => ({ ...prev, email: e.target.value }))
-                    }
+                    value={editedProfile?.email || ""}
+                    onChange={handleInputChange}
                     disabled={!isEditing}
                   />
                 </div>
@@ -225,24 +266,20 @@ export default function ProfilePage() {
                   <Label htmlFor="phone">Phone</Label>
                   <Input
                     id="phone"
-                    value={profile.phone}
-                    onChange={(e) =>
-                      setProfile((prev) => ({ ...prev, phone: e.target.value }))
-                    }
+                    value={editedProfile?.phone || ""}
+                    onChange={handleInputChange}
                     disabled={!isEditing}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="department">Department</Label>
                   <Select
-                    value={profile.department}
-                    onValueChange={(value) =>
-                      setProfile((prev) => ({ ...prev, department: value }))
-                    }
+                    value={editedProfile?.department || ""}
+                    onValueChange={(value) => handleSelectChange("department", value)}
                     disabled={!isEditing}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a department" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Computer Science">
@@ -258,14 +295,12 @@ export default function ProfilePage() {
                 <div className="space-y-2">
                   <Label htmlFor="yearOfStudy">Year of Study</Label>
                   <Select
-                    value={profile.yearOfStudy}
-                    onValueChange={(value) =>
-                      setProfile((prev) => ({ ...prev, yearOfStudy: value }))
-                    }
+                    value={editedProfile?.yearOfStudy || ""}
+                    onValueChange={(value) => handleSelectChange("yearOfStudy", value)}
                     disabled={!isEditing}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select your year" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1st Year">1st Year</SelectItem>
@@ -283,10 +318,8 @@ export default function ProfilePage() {
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea
                   id="bio"
-                  value={profile.bio}
-                  onChange={(e) =>
-                    setProfile((prev) => ({ ...prev, bio: e.target.value }))
-                  }
+                  value={editedProfile?.bio || ""}
+                  onChange={handleInputChange}
                   disabled={!isEditing}
                   rows={3}
                   placeholder="Tell us about yourself and your interests..."
@@ -297,13 +330,8 @@ export default function ProfilePage() {
                 <Label htmlFor="location">Location</Label>
                 <Input
                   id="location"
-                  value={profile.location}
-                  onChange={(e) =>
-                    setProfile((prev) => ({
-                      ...prev,
-                      location: e.target.value,
-                    }))
-                  }
+                  value={editedProfile?.location || ""}
+                  onChange={handleInputChange}
                   disabled={!isEditing}
                 />
               </div>
@@ -317,13 +345,8 @@ export default function ProfilePage() {
                     <Label htmlFor="linkedin">LinkedIn</Label>
                     <Input
                       id="linkedin"
-                      value={profile.linkedin}
-                      onChange={(e) =>
-                        setProfile((prev) => ({
-                          ...prev,
-                          linkedin: e.target.value,
-                        }))
-                      }
+                      value={editedProfile?.linkedin || ""}
+                      onChange={handleInputChange}
                       disabled={!isEditing}
                       placeholder="https://linkedin.com/in/username"
                     />
@@ -332,13 +355,8 @@ export default function ProfilePage() {
                     <Label htmlFor="github">GitHub</Label>
                     <Input
                       id="github"
-                      value={profile.github}
-                      onChange={(e) =>
-                        setProfile((prev) => ({
-                          ...prev,
-                          github: e.target.value,
-                        }))
-                      }
+                      value={editedProfile?.github || ""}
+                      onChange={handleInputChange}
                       disabled={!isEditing}
                       placeholder="https://github.com/username"
                     />
@@ -348,13 +366,8 @@ export default function ProfilePage() {
                   <Label htmlFor="website">Personal Website</Label>
                   <Input
                     id="website"
-                    value={profile.website}
-                    onChange={(e) =>
-                      setProfile((prev) => ({
-                        ...prev,
-                        website: e.target.value,
-                      }))
-                    }
+                    value={editedProfile?.website || ""}
+                    onChange={handleInputChange}
                     disabled={!isEditing}
                     placeholder="https://yourwebsite.com"
                   />
@@ -445,7 +458,10 @@ export default function ProfilePage() {
 
               <div className="space-y-4">
                 <h4 className="font-semibold text-red-600">Danger Zone</h4>
-                <Button variant="destructive" className="w-full justify-start">
+                <Button
+                  variant="destructive"
+                  className="w-full justify-start"
+                >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete Account
                 </Button>
@@ -513,3 +529,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+export default withAuth(ProfilePage);

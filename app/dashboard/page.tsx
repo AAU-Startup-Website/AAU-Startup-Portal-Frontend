@@ -1,14 +1,41 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import withAuth from "@/components/auth/withAuth"
+import { getProfile } from "@/lib/api"
+import { getToken } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { Users, Building2, TrendingUp, DollarSign, FileText, Award, ArrowUpRight } from "lucide-react"
 
-export default function AdminDashboard() {
+function AdminDashboard() {
   const [timeRange, setTimeRange] = useState("30d")
+  const [user, setUser] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = getToken()
+      if (token) {
+        try {
+          const profile = await getProfile(token)
+          setUser(profile)
+        } catch (error) {
+          console.error(error)
+          // Handle error, e.g., redirect to login if token is invalid
+          router.push('/login')
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    fetchProfile()
+  }, [router])
 
   // Mock data for charts
   const applicationData = [
@@ -73,6 +100,10 @@ export default function AdminDashboard() {
     }
   }
 
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a proper skeleton loader
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -80,7 +111,7 @@ export default function AdminDashboard() {
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
+              <h1 className="text-4xl font-bold mb-2">Welcome, {user?.username || 'Admin'}!</h1>
               <p className="text-xl text-muted-foreground">Overview of AAU Startups Portal performance and metrics</p>
             </div>
             <div className="flex space-x-2">
@@ -194,7 +225,7 @@ export default function AdminDashboard() {
                       outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                     >
                       {sectorData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -304,3 +335,5 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
+export default withAuth(AdminDashboard);

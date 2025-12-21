@@ -1,161 +1,175 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Eye, EyeOff, Mail, Lock } from "lucide-react"
-import { useAuth } from "@/components/auth/auth-context"
+import { Eye, EyeOff, Lock, User, Phone, Mail, Globe } from "lucide-react"
+import { loginUser } from "@/lib/api"
+import { setToken } from "@/lib/auth"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const router = useRouter()
-  const { login, user } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
     try {
-      const signedIn = await login(email, password)
-      if (signedIn?.role) {
-        const redirectMap: Record<string, string> = {
-          founder: "/founder",
-          mentor: "/mentor",
-          investor: "/investor",
-          admin: "/dashboard",
-        }
-        router.push(redirectMap[signedIn.role] || "/dashboard")
-      } else {
+      const data = await loginUser({ username, password })
+      if (data.token) {
+        setToken(data.token)
         router.push("/dashboard")
+      } else {
+        setError("Login failed: No access token received")
       }
     } catch (err: any) {
-      setError(err.message || "Login failed")
+      setError(err.message || "Invalid credentials. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="flex justify-center">
-            <div className="h-12 w-12 rounded-full bg-aau-blue flex items-center justify-center">
-              <span className="text-white font-bold">AAU</span>
-            </div>
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Top Contact Bar (Dark Navy) */}
+      <div className="bg-[#001529] text-white py-2 px-6 flex justify-between items-center text-xs">
+        <div className="flex gap-4">
+          <span className="flex items-center gap-1"><Phone size={12} /> +251 11 123 4567</span>
+          <span className="flex items-center gap-1"><Mail size={12} /> portal@aau.edu.et</span>
+        </div>
+        <div className="hidden md:flex gap-4">
+          <span className="flex items-center gap-1"><Globe size={12} /> www.aau.edu.et</span>
+        </div>
+      </div>
+
+      <div className="flex flex-1">
+        {/* Left Side: Image with Curved Edge */}
+        <div className="hidden lg:block w-1/2 relative overflow-hidden">
+          <img 
+            src="image1.png" 
+            alt="University Architecture" 
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-blue-900/30" />
+          
+          {/* Curved Edge SVG */}
+          <div className="absolute top-0 right-[-1px] h-full w-24 fill-white">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full fill-white">
+              <path d="M100 0 C50 0 50 100 100 100 Z" />
+            </svg>
           </div>
-          <h1 className="text-2xl font-bold">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your AAU Startups Portal account</p>
+
+          <div className="absolute bottom-20 left-12 text-white z-10 max-w-md">
+            <h2 className="text-4xl font-bold mb-4 uppercase tracking-wider">Welcome Back</h2>
+            <p className="text-lg opacity-90 font-light italic border-l-4 border-blue-400 pl-4">
+              "Access the hub of innovation and entrepreneurial excellence."
+            </p>
+          </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Right Side: Login Form Area */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16">
+          <div className="w-full max-w-sm space-y-8">
+            {/* Logo and Title */}
+            <div className="text-center">
+              <div className="inline-block p-3 rounded-full bg-blue-50 mb-4">
+                <div className="h-16 w-16 rounded-full bg-[#0056b3] flex items-center justify-center text-white font-black text-xl shadow-lg">
+                  AAU
+                </div>
+              </div>
+              <h1 className="text-3xl font-bold text-[#001529] tracking-tight">AAU STARTUPS</h1>
+              <p className="text-[#6c757d] mt-2 font-medium uppercase text-xs tracking-[0.2em]">Institutional Access Portal</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <Alert variant="destructive">
+                <Alert className="bg-red-50 border-red-200 text-red-800 rounded-lg">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your.email@aau.edu.et"
-                    className="pl-10"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+              <div className="space-y-4">
+                {/* Username Input */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="username" className="text-xs font-bold text-[#0056b3] ml-1 uppercase">Username</Label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      id="username"
+                      placeholder="Username"
+                      className="pl-11 h-12 rounded-full border-slate-200 focus:border-[#0056b3] focus:ring-[#0056b3]/10 transition-all bg-slate-50/30"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Password Input */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center px-1">
+                    <Label htmlFor="password" className="text-xs font-bold text-[#0056b3] uppercase">Password</Label>
+                    <Link href="/forgot-password" size="sm" className="text-[10px] font-bold text-slate-400 hover:text-[#0056b3] uppercase tracking-tighter">
+                      Forgot?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-11 h-12 rounded-full border-slate-200 focus:border-[#0056b3] focus:ring-[#0056b3]/10 transition-all bg-slate-50/30"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0056b3]"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    className="pl-10 pr-10"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                </div>
+              <div className="flex items-center space-x-2 px-1">
+                <Checkbox id="remember" className="rounded-sm border-slate-300" />
+                <label htmlFor="remember" className="text-[11px] text-slate-500 font-medium">
+                  Stay signed in for 30 days
+                </label>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="remember" />
-                  <Label htmlFor="remember" className="text-sm">
-                    Remember me
-                  </Label>
-                </div>
-                <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
-
-              <Button type="submit" className="w-full bg-aau-blue hover:bg-aau-blue/90" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+              <Button 
+                type="submit" 
+                className="w-full h-12 rounded-full bg-[#0056b3] hover:bg-[#003d82] text-white font-bold text-sm tracking-wide shadow-lg transition-transform active:scale-[0.98]" 
+                disabled={isLoading}
+              >
+                {isLoading ? "AUTHENTICATING..." : "SIGN IN TO PORTAL"}
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link href="/register" className="text-primary hover:underline font-medium">
-                  Sign up
+            <div className="text-center pt-4">
+              <p className="text-sm text-slate-500 font-medium">
+                New to the platform?{" "}
+                <Link href="/register" className="text-[#0056b3] hover:underline font-bold">
+                  CREATE ACCOUNT
                 </Link>
               </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <div className="text-center text-sm text-muted-foreground">
-          <p>By signing in, you agree to our</p>
-          <div className="space-x-1">
-            <Link href="/terms" className="text-primary hover:underline">
-              Terms of Service
-            </Link>
-            <span>and</span>
-            <Link href="/privacy" className="text-primary hover:underline">
-              Privacy Policy
-            </Link>
           </div>
         </div>
       </div>

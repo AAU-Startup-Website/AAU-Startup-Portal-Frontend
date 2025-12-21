@@ -1,4 +1,4 @@
-"use client"; // Add this directive at the very top
+"use client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,345 +10,180 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ArrowRight, Calendar, Target, Lightbulb, Rocket } from "lucide-react";
+import { ArrowRight, Calendar, Target, Lightbulb, Rocket, ExternalLink } from "lucide-react";
 
 export default function HomePage() {
   const heroImages = [
-    "/image1.png", // Replace with the actual paths to your uploaded images
+    "/image1.png",
     "/image3.png",
     "/image2.png",
     "/image4.png",
   ];
 
   return (
-    <div className="min-h-screen">
-      {/* Custom styles for the faster, smoother image slider */}
-      <style jsx>{`
+    <div className="min-h-screen bg-white">
+      {/* AAU Brand Colors defined in a style block for ease of use */}
+      <style jsx global>{`
+        :root {
+          --aau-blue: #005696;
+          --aau-gold: #f2a900;
+          --aau-dark-blue: #003d6b;
+        }
         @keyframes fast-slide-in-out {
-          /* 1. Slide in and fade in for the first 8% of the animation */
-          0% {
-            opacity: 0;
-            transform: translateX(100%);
-          }
-          8% {
-            opacity: 1;
-            transform: translateX(0%);
-          }
-
-          /* 2. Hold the image on screen until 33% */
-          33% {
-            opacity: 1;
-            transform: translateX(0%);
-          }
-
-          /* 3. Slide out and fade out until 41% */
-          41% {
-            opacity: 0;
-            transform: translateX(-100%);
-          }
-
-          /* 4. Remain hidden for the rest of the cycle */
-          100% {
-            opacity: 0;
-            transform: translateX(-100%);
-          }
+          0% { opacity: 0; transform: scale(1.1); }
+          10% { opacity: 1; transform: scale(1); }
+          30% { opacity: 1; transform: scale(1); }
+          40% { opacity: 0; transform: scale(1); }
+          100% { opacity: 0; }
         }
-
         .hero-image-slide {
-          /*
-            - Total cycle is now 12s instead of 30s.
-            - "ease-in-out" is added for a smoother sliding effect.
-          */
-          animation: fast-slide-in-out 12s ease-in-out infinite;
+          animation: fast-slide-in-out 16s ease-in-out infinite;
         }
-
-        /* Adjust delay for each image based on the new 12s duration */
-        /* 12s total / 4 images = 3s delay between each slide */
-        .hero-image-slide:nth-child(1) {
-          animation-delay: 0s;
-        }
-        .hero-image-slide:nth-child(2) {
-          animation-delay: 3s;
-        }
-        .hero-image-slide:nth-child(3) {
-          animation-delay: 6s;
-        }
-        .hero-image-slide:nth-child(4) {
-          animation-delay: 9s;
-        }
+        .hero-image-slide:nth-child(1) { animation-delay: 0s; }
+        .hero-image-slide:nth-child(2) { animation-delay: 4s; }
+        .hero-image-slide:nth-child(3) { animation-delay: 8s; }
+        .hero-image-slide:nth-child(4) { animation-delay: 12s; }
       `}</style>
 
-      {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
-        {/* Background Image Slider */}
-        <div className="absolute inset-0 w-full h-full">
-          {heroImages.map((src, index) => (
-            <img
-              key={index}
-              src={src}
-              alt={`AAU Startups background ${index + 1}`}
-              className="absolute inset-0 w-full h-full object-cover hero-image-slide"
-            />
-          ))}
-          {/* Overlay for text readability */}
-          <div className="absolute inset-0 bg-black/50"></div>
+      {/* Hero Section - Matching the Screenshot Style */}
+      <section className="relative h-[650px] flex items-center overflow-hidden bg-[#005696]">
+        {/* Left Side: Image with Arch Cut-out */}
+        <div className="absolute left-0 top-0 w-1/2 h-full z-0 hidden lg:block">
+           <div className="relative w-full h-full">
+            {heroImages.map((src, index) => (
+                <img
+                key={index}
+                src={src}
+                alt="AAU Campus"
+                className="absolute inset-0 w-full h-full object-cover hero-image-slide"
+                />
+            ))}
+            {/* The White Curved Overlay from the screenshot */}
+            <div className="absolute -right-1 top-0 h-full w-32 bg-[#005696] clip-path-curve" 
+                 style={{ clipPath: 'ellipse(100% 100% at 100% 50%)', transform: 'translateX(50%)' }}>
+            </div>
+           </div>
         </div>
 
-        {/* Content over the slider */}
-        <div className="relative z-10 container mx-auto max-w-7xl text-center text-white">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <Badge className="bg-aau-gold text-aau-blue hover:bg-aau-gold/90">
-              🚀 Now Accepting Applications
-            </Badge>
+        {/* Right Side / Mobile Center: Content */}
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="lg:w-1/2 lg:ml-auto text-white space-y-8">
+            <div className="space-y-4">
+               <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight leading-tight">
+                SEEK WISDOM, <br/>
+                <span className="text-white/90">ELEVATE YOUR INTELLECT</span> <br/>
+                <span className="text-[#f2a900]">AND SERVE HUMANITY</span>
+              </h1>
+              
+              <div className="h-1 bg-[#f2a900] w-24"></div>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-balance">
-              Transform Your <span className="text-aau-blue-light">Ideas</span>{" "}
-              Into
-              <span className="text-aau-gold-light"> Impactful Startups</span>
-            </h1>
+              <p className="text-lg md:text-xl text-blue-50/90 max-w-xl font-medium leading-relaxed">
+                AAU provides an exceptional educational experience to all students that 
+                prepares them for successful completion, employability and job creation.
+              </p>
+            </div>
 
-            <p className="text-xl text-white/90 text-pretty max-w-2xl mx-auto">
-              Join AAU's premier startup incubation program. Get mentorship,
-              resources, and funding to turn your innovative ideas into
-              successful businesses.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button
-                size="lg"
-                asChild
-                className="bg-aau-blue hover:bg-aau-blue/90"
-              >
-                <Link href="/apply">
-                  Apply Now <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+            <div className="flex flex-wrap gap-4">
+              <Button size="lg" className="bg-white text-[#005696] hover:bg-blue-50 font-bold px-8">
+                Login <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="border-gray text-black hover:bg-aau-blue hover:text-aau-blue"
-              >
-                <Link href="/startups">Browse Startups</Link>
+              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 font-bold px-8">
+                Find Co-founders <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 px-4 bg-muted/30">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-aau-blue">150+</div>
-              <div className="text-sm text-muted-foreground">
-                Startups Launched
+      {/* Impact Stats - Inspired by "Our Impact in Numbers" */}
+      <section className="py-12 border-b">
+        <div className="container mx-auto px-6">
+          <p className="text-[#005696] font-bold uppercase tracking-widest text-sm mb-4">Statistics</p>
+          <h2 className="text-3xl font-bold text-slate-800 mb-10">Our Impact in Numbers</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { label: "Startups Launched", value: "150+" },
+              { label: "Expert Mentors", value: "50+" },
+              { label: "Funding Raised", value: "$2M+" },
+              { label: "Success Rate", value: "85%" },
+            ].map((stat, i) => (
+              <div key={i} className="border-l-4 border-[#f2a900] pl-6 py-2">
+                <div className="text-4xl font-black text-[#005696]">{stat.value}</div>
+                <div className="text-sm font-semibold text-slate-500 uppercase">{stat.label}</div>
               </div>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-aau-blue">50+</div>
-              <div className="text-sm text-muted-foreground">
-                Expert Mentors
-              </div>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-aau-blue">$2M+</div>
-              <div className="text-sm text-muted-foreground">
-                Funding Raised
-              </div>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="text-3xl font-bold text-aau-blue">85%</div>
-              <div className="text-sm text-muted-foreground">Success Rate</div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Why Choose AAU Startups Portal?
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to build, launch, and scale your startup
-            </p>
+      {/* Features - Clean Modern Grid */}
+      <section className="py-24 bg-slate-50">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div className="max-w-2xl">
+              <h2 className="text-4xl font-bold text-[#003d6b] mb-4">Why Choose AAU Startups?</h2>
+              <p className="text-lg text-slate-600">Everything you need to build, launch, and scale your startup within the Ethiopian ecosystem.</p>
+            </div>
+            <Button className="bg-[#005696] hover:bg-[#003d6b]">Join the Program</Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-2 hover:border-primary/20 transition-colors">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-aau-blue/10 flex items-center justify-center mb-4">
-                  <Lightbulb className="h-6 w-6 text-aau-blue" />
-                </div>
-                <CardTitle>Expert Mentorship</CardTitle>
-                <CardDescription>
-                  Get guidance from industry experts and successful
-                  entrepreneurs
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-2 hover:border-primary/20 transition-colors">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-aau-gold/10 flex items-center justify-center mb-4">
-                  <Target className="h-6 w-6 text-aau-gold" />
-                </div>
-                <CardTitle>Funding Opportunities</CardTitle>
-                <CardDescription>
-                  Access to seed funding, grants, and investor networks
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-2 hover:border-primary/20 transition-colors">
-              <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-aau-blue/10 flex items-center justify-center mb-4">
-                  <Rocket className="h-6 w-6 text-aau-blue" />
-                </div>
-                <CardTitle>Resources & Tools</CardTitle>
-                <CardDescription>
-                  Co-working spaces, legal support, and business development
-                  tools
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <FeatureCard 
+              icon={<Lightbulb className="text-[#f2a900]" />} 
+              title="Expert Mentorship" 
+              desc="Get guidance from industry experts and successful Ethiopian entrepreneurs."
+            />
+            <FeatureCard 
+              icon={<Target className="text-[#f2a900]" />} 
+              title="Funding Opportunities" 
+              desc="Access to seed funding, government grants, and private investor networks."
+            />
+            <FeatureCard 
+              icon={<Rocket className="text-[#f2a900]" />} 
+              title="Resources & Tools" 
+              desc="Modern co-working spaces, legal support, and global business tools."
+            />
           </div>
         </div>
       </section>
 
-      {/* Featured Startups */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Featured Startups</h2>
-              <p className="text-muted-foreground">
-                Discover innovative companies from our community
-              </p>
+      {/* Events Section - Structured List */}
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="bg-[#005696] rounded-3xl p-8 md:p-12 text-white flex flex-col md:flex-row items-center justify-between shadow-2xl overflow-hidden relative">
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Your Journey?</h2>
+              <p className="text-blue-100 text-lg mb-8 max-w-lg">Join hundreds of entrepreneurs who have transformed their ideas into successful businesses.</p>
+              <div className="flex gap-4">
+                <Button className="bg-[#f2a900] hover:bg-[#d49400] text-[#003d6b] font-bold">Apply Now</Button>
+                <Button variant="link" className="text-white hover:text-[#f2a900]">Find Co-founders →</Button>
+              </div>
             </div>
-            <Button variant="outline" asChild>
-              <Link href="/startups">View All</Link>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-aau-blue to-aau-gold"></div>
-                    <Badge variant="secondary">FinTech</Badge>
-                  </div>
-                  <CardTitle>EthioPay Solutions</CardTitle>
-                  <CardDescription>
-                    Revolutionary mobile payment platform for rural Ethiopia
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>Series A</span>
-                    <span>$500K raised</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Upcoming Events */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Upcoming Events</h2>
-              <p className="text-muted-foreground">
-                Join our community events and workshops
-              </p>
-            </div>
-            <Button variant="outline" asChild>
-              <Link href="/events">View All Events</Link>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                title: "Startup Pitch Night",
-                date: "Dec 15, 2024",
-                time: "6:00 PM",
-                location: "AAU Main Campus",
-              },
-              {
-                title: "Entrepreneurship Workshop",
-                date: "Dec 20, 2024",
-                time: "2:00 PM",
-                location: "Innovation Hub",
-              },
-            ].map((event, i) => (
-              <Card key={i} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{event.title}</CardTitle>
-                      <CardDescription className="mt-2">
-                        <div className="flex items-center space-x-4 text-sm">
-                          <span className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            {event.date}
-                          </span>
-                          <span>{event.time}</span>
-                        </div>
-                        <div className="mt-1">{event.location}</div>
-                      </CardDescription>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      RSVP
-                    </Button>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-aau-blue text-white">
-        <div className="container mx-auto max-w-7xl text-center">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Ready to Start Your Journey?
-            </h2>
-            <p className="text-xl opacity-90">
-              Join hundreds of entrepreneurs who have transformed their ideas
-              into successful businesses
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                variant="secondary"
-                asChild
-                className="bg-aau-gold text-aau-blue hover:bg-aau-gold/90"
-              >
-                <Link href="/apply">Apply Now</Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="border-white text-white hover:text-aau-blue bg-transparent"
-              >
-                <Link href="/cofounders">Find Co-founders</Link>
-              </Button>
+            {/* Background Decorative Element */}
+            <div className="absolute right-0 bottom-0 opacity-10 translate-x-1/4 translate-y-1/4">
+               <Rocket size={400} />
             </div>
           </div>
         </div>
       </section>
     </div>
+  );
+}
+
+function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
+  return (
+    <Card className="group hover:shadow-xl transition-all duration-300 border-none bg-white shadow-md">
+      <CardHeader>
+        <div className="h-14 w-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-[#005696] transition-colors duration-300">
+          <div className="group-hover:text-white transition-colors duration-300">
+            {icon}
+          </div>
+        </div>
+        <CardTitle className="text-xl text-[#003d6b]">{title}</CardTitle>
+        <CardDescription className="text-slate-600 leading-relaxed pt-2">
+          {desc}
+        </CardDescription>
+      </CardHeader>
+    </Card>
   );
 }
