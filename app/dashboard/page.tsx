@@ -1,41 +1,44 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import withAuth from "@/components/auth/withAuth"
-import { getProfile } from "@/lib/api"
-import { getToken } from "@/lib/auth"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
-import { Users, Building2, TrendingUp, DollarSign, FileText, Award, ArrowUpRight } from "lucide-react"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { AuthGuard } from "@/components/auth/auth-guard";
+import { useAuth } from "@/components/auth/auth-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import {
+  Users,
+  Building2,
+  TrendingUp,
+  DollarSign,
+  FileText,
+  Award,
+  ArrowUpRight,
+} from "lucide-react";
 
 function AdminDashboard() {
-  const [timeRange, setTimeRange] = useState("30d")
-  const [user, setUser] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const token = getToken()
-      if (token) {
-        try {
-          const profile = await getProfile(token)
-          setUser(profile)
-        } catch (error) {
-          console.error(error)
-          // Handle error, e.g., redirect to login if token is invalid
-          router.push('/login')
-        } finally {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    fetchProfile()
-  }, [router])
+  const [timeRange, setTimeRange] = useState("30d");
+  const { user } = useAuth();
+  const router = useRouter();
 
   // Mock data for charts
   const applicationData = [
@@ -45,7 +48,7 @@ function AdminDashboard() {
     { month: "Apr", applications: 61, approved: 22 },
     { month: "May", applications: 55, approved: 19 },
     { month: "Jun", applications: 67, approved: 25 },
-  ]
+  ];
 
   const sectorData = [
     { name: "FinTech", value: 35, color: "#003DA5" },
@@ -53,7 +56,7 @@ function AdminDashboard() {
     { name: "EdTech", value: 20, color: "#10B981" },
     { name: "AgriTech", value: 15, color: "#F59E0B" },
     { name: "Other", value: 5, color: "#6B7280" },
-  ]
+  ];
 
   const recentApplications = [
     {
@@ -83,26 +86,22 @@ function AdminDashboard() {
       submittedAt: "2024-12-08",
       status: "needs_info",
     },
-  ]
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "under_review":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "needs_info":
-        return "bg-orange-100 text-orange-800"
+        return "bg-orange-100 text-orange-800";
       case "rejected":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
-
-  if (isLoading) {
-    return <div>Loading...</div>; // Or a proper skeleton loader
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -111,17 +110,33 @@ function AdminDashboard() {
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Welcome, {user?.username || 'Admin'}!</h1>
-              <p className="text-xl text-muted-foreground">Overview of AAU Startups Portal performance and metrics</p>
+              <h1 className="text-4xl font-bold mb-2">
+                Welcome, {user?.name || "Admin"}!
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Overview of AAU Startups Portal performance and metrics
+              </p>
             </div>
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm" onClick={() => setTimeRange("7d")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTimeRange("7d")}
+              >
                 7 Days
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setTimeRange("30d")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTimeRange("30d")}
+              >
                 30 Days
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setTimeRange("90d")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTimeRange("90d")}
+              >
                 90 Days
               </Button>
             </div>
@@ -136,7 +151,9 @@ function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Startups</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Startups
+                </CardTitle>
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -149,7 +166,9 @@ function AdminDashboard() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Applications</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Active Applications
+                </CardTitle>
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -162,7 +181,9 @@ function AdminDashboard() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Funding</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Funding
+                </CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -175,7 +196,9 @@ function AdminDashboard() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Success Rate
+                </CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -193,7 +216,9 @@ function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Application Trends</CardTitle>
-                <CardDescription>Monthly applications and approval rates</CardDescription>
+                <CardDescription>
+                  Monthly applications and approval rates
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -202,7 +227,11 @@ function AdminDashboard() {
                     <XAxis dataKey="month" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="applications" fill="#003DA5" name="Applications" />
+                    <Bar
+                      dataKey="applications"
+                      fill="#003DA5"
+                      name="Applications"
+                    />
                     <Bar dataKey="approved" fill="#FFD700" name="Approved" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -213,7 +242,9 @@ function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Startup Sectors</CardTitle>
-                <CardDescription>Distribution of startups by sector</CardDescription>
+                <CardDescription>
+                  Distribution of startups by sector
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -225,7 +256,9 @@ function AdminDashboard() {
                       outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                      label={({ name, percent }) =>
+                        `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                      }
                     >
                       {sectorData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -244,7 +277,9 @@ function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Recent Applications</CardTitle>
-                  <CardDescription>Latest startup applications requiring review</CardDescription>
+                  <CardDescription>
+                    Latest startup applications requiring review
+                  </CardDescription>
                 </div>
                 <Button variant="outline" size="sm">
                   View All
@@ -255,7 +290,10 @@ function AdminDashboard() {
             <CardContent>
               <div className="space-y-4">
                 {recentApplications.map((application) => (
-                  <div key={application.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div
+                    key={application.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
                     <div className="flex items-center space-x-4">
                       <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
                         <Building2 className="h-5 w-5 text-aau-blue" />
@@ -263,7 +301,8 @@ function AdminDashboard() {
                       <div>
                         <h4 className="font-medium">{application.startup}</h4>
                         <p className="text-sm text-muted-foreground">
-                          by {application.founder} • {application.sector} • {application.stage}
+                          by {application.founder} • {application.sector} •{" "}
+                          {application.stage}
                         </p>
                       </div>
                     </div>
@@ -273,7 +312,9 @@ function AdminDashboard() {
                           {application.status.replace("_", " ")}
                         </Badge>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(application.submittedAt).toLocaleDateString()}
+                          {new Date(
+                            application.submittedAt
+                          ).toLocaleDateString()}
                         </p>
                       </div>
                       <Button variant="outline" size="sm">
@@ -296,7 +337,9 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Review Applications</h3>
-                    <p className="text-sm text-muted-foreground">23 pending reviews</p>
+                    <p className="text-sm text-muted-foreground">
+                      23 pending reviews
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -310,7 +353,9 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Manage Users</h3>
-                    <p className="text-sm text-muted-foreground">User roles & permissions</p>
+                    <p className="text-sm text-muted-foreground">
+                      User roles & permissions
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -324,7 +369,9 @@ function AdminDashboard() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Generate Reports</h3>
-                    <p className="text-sm text-muted-foreground">Analytics & insights</p>
+                    <p className="text-sm text-muted-foreground">
+                      Analytics & insights
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -333,7 +380,13 @@ function AdminDashboard() {
         </div>
       </section>
     </div>
-  )
+  );
 }
 
-export default withAuth(AdminDashboard);
+export default function AdminDashboardPage() {
+  return (
+    <AuthGuard requiredRoles={["admin"]}>
+      <AdminDashboard />
+    </AuthGuard>
+  );
+}

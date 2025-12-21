@@ -1,12 +1,27 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
+import { AuthGuard } from "@/components/auth/auth-guard";
 import {
   Building2,
   Users,
@@ -20,11 +35,19 @@ import {
   AlertTriangle,
   Plus,
   ArrowUpRight,
-} from "lucide-react"
-import Link from "next/link"
+} from "lucide-react";
+import Link from "next/link";
 
-export default function FounderDashboard() {
-  const [activeTab, setActiveTab] = useState("overview")
+export default function FounderDashboardPage() {
+  return (
+    <AuthGuard requiredRoles={["founder"]}>
+      <FounderDashboard />
+    </AuthGuard>
+  );
+}
+
+function FounderDashboard() {
+  const [activeTab, setActiveTab] = useState("overview");
 
   // Mock data for founder's startup
   const startupMetrics = [
@@ -34,7 +57,7 @@ export default function FounderDashboard() {
     { month: "Apr", users: 3200, revenue: 12800 },
     { month: "May", users: 4100, revenue: 16400 },
     { month: "Jun", users: 5000, revenue: 20000 },
-  ]
+  ];
 
   const applications = [
     {
@@ -43,7 +66,8 @@ export default function FounderDashboard() {
       status: "approved",
       submittedAt: "2024-11-15",
       reviewedAt: "2024-11-28",
-      feedback: "Excellent market opportunity and strong team. Approved for incubation program.",
+      feedback:
+        "Excellent market opportunity and strong team. Approved for incubation program.",
     },
     {
       id: 2,
@@ -53,7 +77,7 @@ export default function FounderDashboard() {
       reviewedAt: null,
       feedback: null,
     },
-  ]
+  ];
 
   const upcomingMeetings = [
     {
@@ -77,42 +101,62 @@ export default function FounderDashboard() {
       time: "09:00",
       type: "internal",
     },
-  ]
+  ];
 
   const milestones = [
-    { title: "Complete MVP Development", progress: 100, dueDate: "2024-11-30", status: "completed" },
-    { title: "Launch Beta Testing", progress: 75, dueDate: "2024-12-15", status: "in_progress" },
-    { title: "Secure Seed Funding", progress: 30, dueDate: "2025-01-31", status: "in_progress" },
-    { title: "Hire 5 Team Members", progress: 0, dueDate: "2025-02-28", status: "pending" },
-  ]
+    {
+      title: "Complete MVP Development",
+      progress: 100,
+      dueDate: "2024-11-30",
+      status: "completed",
+    },
+    {
+      title: "Launch Beta Testing",
+      progress: 75,
+      dueDate: "2024-12-15",
+      status: "in_progress",
+    },
+    {
+      title: "Secure Seed Funding",
+      progress: 30,
+      dueDate: "2025-01-31",
+      status: "in_progress",
+    },
+    {
+      title: "Hire 5 Team Members",
+      progress: 0,
+      dueDate: "2025-02-28",
+      status: "pending",
+    },
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "under_review":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "needs_info":
-        return "bg-orange-100 text-orange-800"
+        return "bg-orange-100 text-orange-800";
       case "rejected":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getMilestoneIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
       case "in_progress":
-        return <Clock className="h-4 w-4 text-yellow-600" />
+        return <Clock className="h-4 w-4 text-yellow-600" />;
       case "pending":
-        return <AlertTriangle className="h-4 w-4 text-gray-400" />
+        return <AlertTriangle className="h-4 w-4 text-gray-400" />;
       default:
-        return <Clock className="h-4 w-4 text-gray-400" />
+        return <Clock className="h-4 w-4 text-gray-400" />;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -122,7 +166,9 @@ export default function FounderDashboard() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div>
               <h1 className="text-4xl font-bold mb-2">Founder Dashboard</h1>
-              <p className="text-xl text-muted-foreground">Track your startup journey and manage your applications</p>
+              <p className="text-xl text-muted-foreground">
+                Track your startup journey and manage your applications
+              </p>
             </div>
             <Button className="bg-aau-blue hover:bg-aau-blue/90" asChild>
               <Link href="/apply">
@@ -137,7 +183,11 @@ export default function FounderDashboard() {
       {/* Main Content */}
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-7xl">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-6"
+          >
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="applications">My Applications</TabsTrigger>
@@ -151,33 +201,45 @@ export default function FounderDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Active Users
+                    </CardTitle>
                     <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-aau-blue">5,000</div>
+                    <div className="text-2xl font-bold text-aau-blue">
+                      5,000
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      <span className="text-green-600">+22%</span> from last month
+                      <span className="text-green-600">+22%</span> from last
+                      month
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Monthly Revenue
+                    </CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-aau-blue">$20,000</div>
+                    <div className="text-2xl font-bold text-aau-blue">
+                      $20,000
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      <span className="text-green-600">+28%</span> from last month
+                      <span className="text-green-600">+28%</span> from last
+                      month
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Team Size</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Team Size
+                    </CardTitle>
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -190,12 +252,18 @@ export default function FounderDashboard() {
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Funding Raised</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Funding Raised
+                    </CardTitle>
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-aau-blue">$2.5M</div>
-                    <p className="text-xs text-muted-foreground">Series A completed</p>
+                    <div className="text-2xl font-bold text-aau-blue">
+                      $2.5M
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Series A completed
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -204,7 +272,9 @@ export default function FounderDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>Growth Metrics</CardTitle>
-                  <CardDescription>User growth and revenue trends over the past 6 months</CardDescription>
+                  <CardDescription>
+                    User growth and revenue trends over the past 6 months
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -244,7 +314,9 @@ export default function FounderDashboard() {
                       </div>
                       <div>
                         <h3 className="font-semibold">Submit New Idea</h3>
-                        <p className="text-sm text-muted-foreground">Apply for incubation</p>
+                        <p className="text-sm text-muted-foreground">
+                          Apply for incubation
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -258,7 +330,9 @@ export default function FounderDashboard() {
                       </div>
                       <div>
                         <h3 className="font-semibold">Book Resources</h3>
-                        <p className="text-sm text-muted-foreground">Reserve workspace</p>
+                        <p className="text-sm text-muted-foreground">
+                          Reserve workspace
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -272,7 +346,9 @@ export default function FounderDashboard() {
                       </div>
                       <div>
                         <h3 className="font-semibold">Contact Mentor</h3>
-                        <p className="text-sm text-muted-foreground">Get guidance</p>
+                        <p className="text-sm text-muted-foreground">
+                          Get guidance
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -288,9 +364,14 @@ export default function FounderDashboard() {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>
-                          <CardTitle className="text-lg">{application.title}</CardTitle>
+                          <CardTitle className="text-lg">
+                            {application.title}
+                          </CardTitle>
                           <CardDescription>
-                            Submitted on {new Date(application.submittedAt).toLocaleDateString()}
+                            Submitted on{" "}
+                            {new Date(
+                              application.submittedAt
+                            ).toLocaleDateString()}
                           </CardDescription>
                         </div>
                         <Badge className={getStatusColor(application.status)}>
@@ -301,11 +382,18 @@ export default function FounderDashboard() {
                     <CardContent>
                       {application.feedback && (
                         <div className="bg-muted/50 p-4 rounded-lg mb-4">
-                          <h4 className="font-medium mb-2">Reviewer Feedback</h4>
-                          <p className="text-sm text-muted-foreground">{application.feedback}</p>
+                          <h4 className="font-medium mb-2">
+                            Reviewer Feedback
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            {application.feedback}
+                          </p>
                           {application.reviewedAt && (
                             <p className="text-xs text-muted-foreground mt-2">
-                              Reviewed on {new Date(application.reviewedAt).toLocaleDateString()}
+                              Reviewed on{" "}
+                              {new Date(
+                                application.reviewedAt
+                              ).toLocaleDateString()}
                             </p>
                           )}
                         </div>
@@ -315,7 +403,10 @@ export default function FounderDashboard() {
                           View Details
                         </Button>
                         {application.status === "needs_info" && (
-                          <Button size="sm" className="bg-aau-blue hover:bg-aau-blue/90">
+                          <Button
+                            size="sm"
+                            className="bg-aau-blue hover:bg-aau-blue/90"
+                          >
                             Update Application
                           </Button>
                         )}
@@ -331,7 +422,9 @@ export default function FounderDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>Startup Milestones</CardTitle>
-                  <CardDescription>Track your progress towards key objectives</CardDescription>
+                  <CardDescription>
+                    Track your progress towards key objectives
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
@@ -343,11 +436,14 @@ export default function FounderDashboard() {
                             <h4 className="font-medium">{milestone.title}</h4>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Due: {new Date(milestone.dueDate).toLocaleDateString()}
+                            Due:{" "}
+                            {new Date(milestone.dueDate).toLocaleDateString()}
                           </div>
                         </div>
                         <Progress value={milestone.progress} className="h-2" />
-                        <div className="text-sm text-muted-foreground">{milestone.progress}% complete</div>
+                        <div className="text-sm text-muted-foreground">
+                          {milestone.progress}% complete
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -362,7 +458,9 @@ export default function FounderDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>Upcoming Meetings</CardTitle>
-                      <CardDescription>Your scheduled meetings and events</CardDescription>
+                      <CardDescription>
+                        Your scheduled meetings and events
+                      </CardDescription>
                     </div>
                     <Button variant="outline" size="sm" asChild>
                       <Link href="/bookings">
@@ -375,7 +473,10 @@ export default function FounderDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {upcomingMeetings.map((meeting) => (
-                      <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={meeting.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
                         <div className="flex items-center space-x-4">
                           <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
                             <Calendar className="h-5 w-5 text-aau-blue" />
@@ -383,7 +484,8 @@ export default function FounderDashboard() {
                           <div>
                             <h4 className="font-medium">{meeting.title}</h4>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(meeting.date).toLocaleDateString()} at {meeting.time}
+                              {new Date(meeting.date).toLocaleDateString()} at{" "}
+                              {meeting.time}
                             </p>
                           </div>
                         </div>
@@ -403,5 +505,5 @@ export default function FounderDashboard() {
         </div>
       </section>
     </div>
-  )
+  );
 }

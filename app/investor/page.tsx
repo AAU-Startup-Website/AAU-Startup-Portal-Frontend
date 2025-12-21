@@ -1,20 +1,50 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Building2, Search, Filter, Heart, Eye, Calendar, ArrowUpRight, MapPin } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AuthGuard } from "@/components/auth/auth-guard";
+import {
+  Building2,
+  Search,
+  Filter,
+  Heart,
+  Eye,
+  Calendar,
+  ArrowUpRight,
+  MapPin,
+} from "lucide-react";
+import Link from "next/link";
 
-export default function InvestorDashboard() {
-  const [activeTab, setActiveTab] = useState("discover")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedSector, setSelectedSector] = useState("all")
+export default function InvestorDashboardPage() {
+  return (
+    <AuthGuard requiredRoles={["investor"]}>
+      <InvestorDashboard />
+    </AuthGuard>
+  );
+}
+
+function InvestorDashboard() {
+  const [activeTab, setActiveTab] = useState("discover");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSector, setSelectedSector] = useState("all");
 
   const featuredStartups = [
     {
@@ -77,7 +107,7 @@ export default function InvestorDashboard() {
       tags: ["Smart Farming", "IoT", "B2B"],
       featured: false,
     },
-  ]
+  ];
 
   const myInterests = [
     {
@@ -96,7 +126,7 @@ export default function InvestorDashboard() {
       meetingScheduled: false,
       nextStep: "Schedule intro call",
     },
-  ]
+  ];
 
   const upcomingEvents = [
     {
@@ -117,7 +147,7 @@ export default function InvestorDashboard() {
       type: "networking",
       startups: 15,
     },
-  ]
+  ];
 
   const getStageColor = (stage: string) => {
     const colors = {
@@ -128,24 +158,24 @@ export default function InvestorDashboard() {
       "Series A": "bg-orange-100 text-orange-800",
       "Series B": "bg-red-100 text-red-800",
       Growth: "bg-purple-100 text-purple-800",
-    }
-    return colors[stage as keyof typeof colors] || "bg-gray-100 text-gray-800"
-  }
+    };
+    return colors[stage as keyof typeof colors] || "bg-gray-100 text-gray-800";
+  };
 
   const getInterestStatusColor = (status: string) => {
     switch (status) {
       case "under_review":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "initial_contact":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "due_diligence":
-        return "bg-orange-100 text-orange-800"
+        return "bg-orange-100 text-orange-800";
       case "negotiating":
-        return "bg-purple-100 text-purple-800"
+        return "bg-purple-100 text-purple-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,7 +185,9 @@ export default function InvestorDashboard() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div>
               <h1 className="text-4xl font-bold mb-2">Investor Dashboard</h1>
-              <p className="text-xl text-muted-foreground">Discover and invest in promising Ethiopian startups</p>
+              <p className="text-xl text-muted-foreground">
+                Discover and invest in promising Ethiopian startups
+              </p>
             </div>
             <Button className="bg-aau-blue hover:bg-aau-blue/90" asChild>
               <Link href="/startups">
@@ -170,7 +202,11 @@ export default function InvestorDashboard() {
       {/* Main Content */}
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-7xl">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-6"
+          >
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="discover">Discover</TabsTrigger>
               <TabsTrigger value="interests">My Interests</TabsTrigger>
@@ -193,7 +229,10 @@ export default function InvestorDashboard() {
                         className="pl-10"
                       />
                     </div>
-                    <Select value={selectedSector} onValueChange={setSelectedSector}>
+                    <Select
+                      value={selectedSector}
+                      onValueChange={setSelectedSector}
+                    >
                       <SelectTrigger className="w-48">
                         <SelectValue placeholder="All sectors" />
                       </SelectTrigger>
@@ -216,7 +255,9 @@ export default function InvestorDashboard() {
               {/* Investment Opportunities */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold">Investment Opportunities</h2>
+                  <h2 className="text-2xl font-bold">
+                    Investment Opportunities
+                  </h2>
                   <Button variant="outline" size="sm" asChild>
                     <Link href="/startups">
                       View All
@@ -229,25 +270,36 @@ export default function InvestorDashboard() {
                   {featuredStartups.map((startup) => (
                     <Card
                       key={startup.id}
-                      className={`hover:shadow-lg transition-shadow ${startup.featured ? "ring-2 ring-aau-gold" : ""}`}
+                      className={`hover:shadow-lg transition-shadow ${
+                        startup.featured ? "ring-2 ring-aau-gold" : ""
+                      }`}
                     >
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex items-center space-x-3">
                             <Avatar className="h-12 w-12">
-                              <AvatarImage src={startup.avatar || "/placeholder.svg"} alt={startup.name} />
+                              <AvatarImage
+                                src={startup.avatar || "/placeholder.svg"}
+                                alt={startup.name}
+                              />
                               <AvatarFallback className="bg-aau-blue text-white">
                                 {startup.name.substring(0, 2)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <div className="flex items-center space-x-2">
-                                <CardTitle className="text-lg">{startup.name}</CardTitle>
+                                <CardTitle className="text-lg">
+                                  {startup.name}
+                                </CardTitle>
                                 {startup.featured && (
-                                  <Badge className="bg-aau-gold text-aau-blue text-xs">Featured</Badge>
+                                  <Badge className="bg-aau-gold text-aau-blue text-xs">
+                                    Featured
+                                  </Badge>
                                 )}
                               </div>
-                              <CardDescription>{startup.tagline}</CardDescription>
+                              <CardDescription>
+                                {startup.tagline}
+                              </CardDescription>
                             </div>
                           </div>
                           <Button variant="ghost" size="sm">
@@ -257,7 +309,9 @@ export default function InvestorDashboard() {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="flex items-center space-x-2">
-                          <Badge className={getStageColor(startup.stage)}>{startup.stage}</Badge>
+                          <Badge className={getStageColor(startup.stage)}>
+                            {startup.stage}
+                          </Badge>
                           <Badge variant="outline">{startup.sector}</Badge>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <MapPin className="h-3 w-3 mr-1" />
@@ -267,16 +321,28 @@ export default function InvestorDashboard() {
 
                         <div className="grid grid-cols-3 gap-4 py-3 border-t border-b">
                           <div className="text-center">
-                            <div className="text-sm font-semibold text-aau-blue">{startup.metrics.users}</div>
-                            <div className="text-xs text-muted-foreground">Users</div>
+                            <div className="text-sm font-semibold text-aau-blue">
+                              {startup.metrics.users}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Users
+                            </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-sm font-semibold text-green-600">{startup.metrics.revenue}</div>
-                            <div className="text-xs text-muted-foreground">Revenue</div>
+                            <div className="text-sm font-semibold text-green-600">
+                              {startup.metrics.revenue}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Revenue
+                            </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-sm font-semibold text-aau-blue">{startup.metrics.growth}</div>
-                            <div className="text-xs text-muted-foreground">Growth</div>
+                            <div className="text-sm font-semibold text-aau-blue">
+                              {startup.metrics.growth}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Growth
+                            </div>
                           </div>
                         </div>
 
@@ -291,29 +357,55 @@ export default function InvestorDashboard() {
                             <div
                               className="bg-aau-blue h-2 rounded-full"
                               style={{
-                                width: `${(Number.parseFloat(startup.raised.replace("$", "").replace("M", "")) / Number.parseFloat(startup.fundingGoal.replace("$", "").replace("M", ""))) * 100}%`,
+                                width: `${
+                                  (Number.parseFloat(
+                                    startup.raised
+                                      .replace("$", "")
+                                      .replace("M", "")
+                                  ) /
+                                    Number.parseFloat(
+                                      startup.fundingGoal
+                                        .replace("$", "")
+                                        .replace("M", "")
+                                    )) *
+                                  100
+                                }%`,
                               }}
                             />
                           </div>
-                          <div className="text-xs text-muted-foreground">Valuation: {startup.valuation}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Valuation: {startup.valuation}
+                          </div>
                         </div>
 
                         <div className="flex flex-wrap gap-1">
                           {startup.tags.slice(0, 3).map((tag, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs"
+                            >
                               {tag}
                             </Badge>
                           ))}
                         </div>
 
                         <div className="flex space-x-2 pt-2">
-                          <Button variant="outline" size="sm" className="flex-1 bg-transparent" asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 bg-transparent"
+                            asChild
+                          >
                             <Link href={`/startups/${startup.id}`}>
                               <Eye className="h-4 w-4 mr-1" />
                               View Details
                             </Link>
                           </Button>
-                          <Button size="sm" className="flex-1 bg-aau-blue hover:bg-aau-blue/90">
+                          <Button
+                            size="sm"
+                            className="flex-1 bg-aau-blue hover:bg-aau-blue/90"
+                          >
                             Express Interest
                           </Button>
                         </div>
@@ -329,12 +421,17 @@ export default function InvestorDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>My Investment Interests</CardTitle>
-                  <CardDescription>Track your expressed interests and investment pipeline</CardDescription>
+                  <CardDescription>
+                    Track your expressed interests and investment pipeline
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {myInterests.map((interest) => (
-                      <div key={interest.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={interest.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
                         <div className="flex items-center space-x-4">
                           <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
                             <Building2 className="h-5 w-5 text-aau-blue" />
@@ -342,13 +439,20 @@ export default function InvestorDashboard() {
                           <div>
                             <h4 className="font-medium">{interest.startup}</h4>
                             <p className="text-sm text-muted-foreground">
-                              Expressed interest on {new Date(interest.expressedAt).toLocaleDateString()}
+                              Expressed interest on{" "}
+                              {new Date(
+                                interest.expressedAt
+                              ).toLocaleDateString()}
                             </p>
-                            <p className="text-xs text-muted-foreground">Next: {interest.nextStep}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Next: {interest.nextStep}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-3">
-                          <Badge className={getInterestStatusColor(interest.status)}>
+                          <Badge
+                            className={getInterestStatusColor(interest.status)}
+                          >
                             {interest.status.replace("_", " ")}
                           </Badge>
                           {interest.meetingScheduled && (
@@ -374,7 +478,9 @@ export default function InvestorDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>Upcoming Investment Events</CardTitle>
-                      <CardDescription>Pitch events, networking, and startup showcases</CardDescription>
+                      <CardDescription>
+                        Pitch events, networking, and startup showcases
+                      </CardDescription>
                     </div>
                     <Button variant="outline" size="sm" asChild>
                       <Link href="/events">
@@ -387,7 +493,10 @@ export default function InvestorDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {upcomingEvents.map((event) => (
-                      <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={event.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
                         <div className="flex items-center space-x-4">
                           <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
                             <Calendar className="h-5 w-5 text-aau-blue" />
@@ -395,14 +504,22 @@ export default function InvestorDashboard() {
                           <div>
                             <h4 className="font-medium">{event.title}</h4>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(event.date).toLocaleDateString()} at {event.time} • {event.location}
+                              {new Date(event.date).toLocaleDateString()} at{" "}
+                              {event.time} • {event.location}
                             </p>
-                            <p className="text-xs text-muted-foreground">{event.startups} startups participating</p>
+                            <p className="text-xs text-muted-foreground">
+                              {event.startups} startups participating
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Badge variant="outline">{event.type.replace("_", " ")}</Badge>
-                          <Button size="sm" className="bg-aau-blue hover:bg-aau-blue/90">
+                          <Badge variant="outline">
+                            {event.type.replace("_", " ")}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            className="bg-aau-blue hover:bg-aau-blue/90"
+                          >
                             RSVP
                           </Button>
                         </div>
@@ -418,16 +535,24 @@ export default function InvestorDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>Investment Portfolio</CardTitle>
-                  <CardDescription>Your current investments and their performance</CardDescription>
+                  <CardDescription>
+                    Your current investments and their performance
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-12">
                     <Building2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No Investments Yet</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      No Investments Yet
+                    </h3>
                     <p className="text-muted-foreground mb-4">
-                      Start building your portfolio by expressing interest in promising startups.
+                      Start building your portfolio by expressing interest in
+                      promising startups.
                     </p>
-                    <Button className="bg-aau-blue hover:bg-aau-blue/90" asChild>
+                    <Button
+                      className="bg-aau-blue hover:bg-aau-blue/90"
+                      asChild
+                    >
                       <Link href="/startups">Discover Startups</Link>
                     </Button>
                   </div>
@@ -438,5 +563,5 @@ export default function InvestorDashboard() {
         </div>
       </section>
     </div>
-  )
+  );
 }

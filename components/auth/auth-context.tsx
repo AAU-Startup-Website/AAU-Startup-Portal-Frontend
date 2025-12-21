@@ -8,6 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
+import { API_BASE_URL } from "@/lib/api";
 
 // Unified user shape consumed by the app
 export interface AppUser {
@@ -56,28 +57,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      setLoading(true);
-      try {
-        // Mock login - replace with your actual authentication API
-        const mockUser: AppUser = {
-          id: "mock-user-id",
-          email,
-          name: "Mock User",
-          role: "founder",
-        };
-        setUser(mockUser);
-        localStorage.setItem("auth_user", JSON.stringify(mockUser));
-        setLoading(false);
-        return mockUser;
-      } catch (error) {
-        setLoading(false);
-        throw new Error("Login failed");
+  const login = useCallback(async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/login/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
       }
-    },
-    []
-  );
+
+      const data = await response.json();
+      if (data.token) {
+        // Store token for API calls
+        localStorage.setItem("authToken", data.token);
+
+        // Get user profile
+        const profileResponse = await fetch(`${API_BASE_URL}/users/profile/`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${data.token}`,
+          },
+        });
+
+        if (profileResponse.ok) {
+          const profile = await profileResponse.json();
+          const appUser: AppUser = {
+            id:
+              profile.id?.toString() || data.user?.id?.toString() || "mock-id",
+            email: profile.email || email,
+            name: profile.username || profile.name || null,
+            role: profile.profile?.role || "founder",
+            avatar: profile.avatar || null,
+            department: profile.profile?.bio || null,
+          };
+          setUser(appUser);
+          localStorage.setItem("auth_user", JSON.stringify(appUser));
+          setLoading(false);
+          return appUser;
+        }
+      }
+      throw new Error("Login failed: No token received");
+    } catch (error) {
+      setLoading(false);
+      throw error;
+    }
+  }, []);
 
   const signUp = useCallback(
     async ({
@@ -97,21 +128,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }) => {
       setLoading(true);
       try {
-        // Mock signup - replace with your actual authentication API
-        const mockUser: AppUser = {
-          id: "mock-user-id",
-          email,
-          name: [firstName, lastName].filter(Boolean).join(" ") || null,
-          role,
-          department,
-        };
-        setUser(mockUser);
-        localStorage.setItem("auth_user", JSON.stringify(mockUser));
+        const response = await fetch(`${API_BASE_URL}/users/register/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: firstName || email.split("@")[0],
+            email,
+            password,
+            profile: {
+              bio: department,
+              role: role,
+              skills: department,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          const firstError = Object.values(errorData)[0];
+          throw new Error(
+            Array.isArray(firstError) ? firstError[0] : "Registration failed."
+          );
+        }
+
+        const data = await response.json();
         setLoading(false);
-        return mockUser;
+        return data; // Registration successful
       } catch (error) {
         setLoading(false);
-        throw new Error("Signup failed");
+        throw error;
       }
     },
     []

@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth/auth-context";
 import { isAuthenticated, removeToken, getToken } from "@/lib/auth";
 import { getProfile } from "@/lib/api";
 import { useEffect } from "react";
@@ -78,36 +79,12 @@ const roleBasedNavItems = {
 };
 
 export function Header() {
-  const [user, setUser] = useState<any>(null);
-  const [isAuth, setIsAuth] = useState(false);
+  const { user, logout, isAuthenticated } = useAuth();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const authStatus = isAuthenticated();
-      setIsAuth(authStatus);
-      if (authStatus) {
-        const token = getToken();
-        if (token) {
-          try {
-            const profile = await getProfile(token);
-            setUser(profile);
-          } catch (error) {
-            console.error("Failed to fetch profile for header", error);
-            // If profile fails, token might be invalid, so log out
-            removeToken();
-            setIsAuth(false);
-            router.push("/login");
-          }
-        }
-      }
-    };
-    checkAuth();
-  }, []);
-
-  const userRole = user?.profile?.role;
-  const userName = user?.username || "User";
+  const userRole = user?.role;
+  const userName = user?.name || "User";
 
   // Generate initials from user name
   const getInitials = (name: string) => {
@@ -119,9 +96,11 @@ export function Header() {
   };
 
   const getNavItems = () => {
-    if (userRole && isAuth) {
-      return roleBasedNavItems[userRole as keyof typeof roleBasedNavItems] || [];
-    } else if (isAuth) {
+    if (userRole && isAuthenticated) {
+      return (
+        roleBasedNavItems[userRole as keyof typeof roleBasedNavItems] || []
+      );
+    } else if (isAuthenticated) {
       return [...publicNavItems, ...protectedPublicNavItems];
     } else {
       return publicNavItems;
@@ -130,10 +109,8 @@ export function Header() {
 
   const navItems = getNavItems();
 
-  const handleLogout = () => {
-    removeToken();
-    setIsAuth(false);
-    setUser(null);
+  const handleLogout = async () => {
+    await logout();
     router.push("/login");
   };
 
@@ -170,7 +147,7 @@ export function Header() {
         {/* Right Side Actions */}
         <div className="flex items-center space-x-4">
           {/* User Menu or Auth Buttons */}
-          {isAuth ? (
+          {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -178,10 +155,7 @@ export function Header() {
                   className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src="/placeholder.svg"
-                      alt={userName}
-                    />
+                    <AvatarImage src="/placeholder.svg" alt={userName} />
                     <AvatarFallback className="bg-aau-blue text-white text-sm">
                       {getInitials(userName)}
                     </AvatarFallback>

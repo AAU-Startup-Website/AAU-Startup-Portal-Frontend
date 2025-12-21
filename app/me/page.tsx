@@ -25,7 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Shield, Key, Trash2, Loader2 } from "lucide-react";
-import withAuth from "@/components/auth/withAuth";
+import { AuthGuard } from "@/components/auth/auth-guard";
 import { getProfile, updateProfile } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
@@ -133,7 +133,9 @@ function ProfilePage() {
     setIsEditing(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     if (!editedProfile) return;
     const { id, value } = e.target;
     setEditedProfile((prev) => (prev ? { ...prev, [id]: value } : null));
@@ -196,11 +198,16 @@ function ProfilePage() {
                     </Button>
                   )}
                   <Button
-                    onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
+                    onClick={() =>
+                      isEditing ? handleSave() : setIsEditing(true)
+                    }
                     disabled={isSaving}
                   >
                     {isSaving ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
                     ) : isEditing ? (
                       "Save Changes"
                     ) : (
@@ -275,7 +282,9 @@ function ProfilePage() {
                   <Label htmlFor="department">Department</Label>
                   <Select
                     value={editedProfile?.department || ""}
-                    onValueChange={(value) => handleSelectChange("department", value)}
+                    onValueChange={(value) =>
+                      handleSelectChange("department", value)
+                    }
                     disabled={!isEditing}
                   >
                     <SelectTrigger>
@@ -296,7 +305,9 @@ function ProfilePage() {
                   <Label htmlFor="yearOfStudy">Year of Study</Label>
                   <Select
                     value={editedProfile?.yearOfStudy || ""}
-                    onValueChange={(value) => handleSelectChange("yearOfStudy", value)}
+                    onValueChange={(value) =>
+                      handleSelectChange("yearOfStudy", value)
+                    }
                     disabled={!isEditing}
                   >
                     <SelectTrigger>
@@ -458,10 +469,7 @@ function ProfilePage() {
 
               <div className="space-y-4">
                 <h4 className="font-semibold text-red-600">Danger Zone</h4>
-                <Button
-                  variant="destructive"
-                  className="w-full justify-start"
-                >
+                <Button variant="destructive" className="w-full justify-start">
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete Account
                 </Button>
@@ -530,4 +538,10 @@ function ProfilePage() {
   );
 }
 
-export default withAuth(ProfilePage);
+export default function ProfilePageWithAuth() {
+  return (
+    <AuthGuard>
+      <ProfilePage />
+    </AuthGuard>
+  );
+}
