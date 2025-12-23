@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { MultiStepForm } from "@/components/forms/multi-step-form";
 import { ProblemStep } from "./components/problem-step";
 import { SolutionStep } from "./components/solution-step";
@@ -18,9 +19,80 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Clock, Users, Target } from "lucide-react";
+import { createIdea, updateIdea, getIdea } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 
-export default function ApplyPage() {
+function ApplyPageContent() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [initialData, setInitialData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId) {
+      loadIdeaForEditing(parseInt(editId));
+    }
+  }, [searchParams]);
+
+  const loadIdeaForEditing = async (ideaId: number) => {
+    try {
+      setLoading(true);
+      const token = getToken();
+      if (!token) {
+        alert("Please log in to edit ideas");
+        return;
+      }
+
+      const idea = await getIdea(token, ideaId);
+
+      // Transform idea data back to form format
+      const formData = {
+        companyName: idea.title,
+        problemStatement: idea.problem_statement,
+        targetAudience: idea.target_audience,
+        problemSize: idea.problem_scale,
+        currentSolutions: idea.existing_solutions,
+        urgency: idea.problem_urgency,
+        solutionDescription: idea.solution,
+        valueProposition: idea.unique_value_proposition,
+        productType: idea.product_type,
+        technologies: idea.technologies_used
+          ? idea.technologies_used.split(", ")
+          : [],
+        developmentStage: idea.development_stage,
+        keyFeatures: idea.key_features,
+        marketSize: idea.market_size_estimation,
+        targetMarket: idea.target_market,
+        marketTrends: idea.market_trend,
+        competitors: idea.competitive_landscape,
+        customerAcquisition: idea.customer_acquisition_strategy,
+        revenueModel: idea.revenue_model,
+        pricingStrategy: idea.pricing_strategy,
+        teamVision: idea.team_vision,
+        teamGaps: idea.hiring_plan,
+        teamMembers: [], // This would need to be reconstructed if stored separately
+        sectors: idea.industry ? idea.industry.split(", ") : [],
+        businessStage: idea.business_stage,
+        fundingNeeds: idea.funding_requirements,
+        businessModel: idea.business_model,
+        currentTraction: idea.current_traction,
+        challenges: idea.key_challenges,
+        timeline: idea.development_timeline,
+      };
+
+      setInitialData(formData);
+      setIsEditing(true);
+      setEditingId(ideaId);
+    } catch (error) {
+      console.error("Failed to load idea for editing:", error);
+      alert("Failed to load idea for editing");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const steps = [
     {
@@ -152,43 +224,65 @@ export default function ApplyPage() {
 
   const handleSubmit = async (formData: any) => {
     try {
-      // Get current user from localStorage (mock implementation)
-      const storedUser = localStorage.getItem("auth_user");
-      if (!storedUser) {
-        alert("Please log in to submit an application");
+      const token = getToken();
+      if (!token) {
+        alert("Please log in to submit an idea");
         return;
       }
 
-      const user = JSON.parse(storedUser);
-
-      // Prepare submission data
-      const submissionData = {
-        ...formData,
-        userId: user.id,
+      // Transform form data to match Idea model
+      const ideaData = {
+        title: formData.companyName || "Untitled Idea",
+        description: formData.solutionDescription || "",
+        problem_statement: formData.problemStatement || "",
+        target_audience: formData.targetAudience || "",
+        problem_scale: formData.problemSize || "",
+        existing_solutions: formData.currentSolutions || "",
+        problem_urgency: formData.urgency || "",
+        solution: formData.solutionDescription || "",
+        unique_value_proposition: formData.valueProposition || "",
+        product_type: formData.productType || "",
+        technologies_used: Array.isArray(formData.technologies)
+          ? formData.technologies.join(", ")
+          : formData.technologies || "",
+        development_stage: formData.developmentStage || "",
+        key_features: formData.keyFeatures || "",
+        market_size_estimation: formData.marketSize || "",
+        target_market: formData.targetMarket || "",
+        market_trend: formData.marketTrends || "",
+        competitive_landscape: formData.competitors || "",
+        customer_acquisition_strategy: formData.customerAcquisition || "",
+        revenue_model: formData.revenueModel || "",
+        pricing_strategy: formData.pricingStrategy || "",
+        team_vision: formData.teamVision || "",
+        hiring_plan: formData.teamGaps || "",
+        team_size: formData.teamMembers?.length || 0,
+        industry: Array.isArray(formData.sectors)
+          ? formData.sectors.join(", ")
+          : formData.sectors || "",
+        business_stage: formData.businessStage || "",
+        funding_requirements: formData.fundingNeeds || "",
+        business_model: formData.businessModel || "",
+        current_traction: formData.currentTraction || "",
+        key_challenges: formData.challenges || "",
+        development_timeline: formData.timeline || "",
       };
 
-      // Submit to API
-      const response = await fetch("/api/applications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submissionData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to submit application");
+      let result;
+      if (isEditing && editingId) {
+        // Update existing idea
+        result = await updateIdea(token, editingId, ideaData);
+      } else {
+        // Create new idea
+        result = await createIdea(token, ideaData);
       }
 
-      const result = await response.json();
-      console.log("Application submitted successfully:", result);
-
+      console.log("Idea saved successfully:", result);
       setIsSubmitted(true);
     } catch (error) {
       console.error("Submission error:", error);
       alert(
-        `Failed to submit application: ${
+        `Failed to ${isEditing ? "update" : "submit"} idea: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );
@@ -205,11 +299,15 @@ export default function ApplyPage() {
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <CardTitle className="text-2xl">
-                Application Submitted Successfully!
+                Idea {isEditing ? "Updated" : "Submitted"} Successfully!
               </CardTitle>
               <CardDescription className="text-lg">
-                Thank you for applying to the AAU Startups Portal. We've
-                received your application and will review it carefully.
+                Thank you for{" "}
+                {isEditing ? "updating your idea" : "submitting your idea"} to
+                the AAU Startups Portal.{" "}
+                {isEditing
+                  ? "Your changes have been saved."
+                  : "We've received your idea and will review it carefully."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -281,20 +379,43 @@ export default function ApplyPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <Badge className="bg-aau-gold text-aau-blue mb-4">
-            Applications Open
+            {isEditing ? "Editing Idea" : "Applications Open"}
           </Badge>
           <h1 className="text-4xl font-bold mb-4">
-            Apply to AAU Startups Portal
+            {isEditing ? "Edit Your Idea" : "Submit Your Idea"}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Join Ethiopia's premier startup incubation program. Get mentorship,
-            funding, and resources to turn your idea into a successful business.
+            {isEditing
+              ? "Update your idea details and resubmit for review."
+              : "Share your innovative idea with Ethiopia's premier startup incubation program. Get mentorship, funding, and resources to turn your idea into a successful business."}
           </p>
         </div>
 
         {/* Application Form */}
-        <MultiStepForm steps={steps} onSubmit={handleSubmit} initialData={{}} />
+        {loading ? (
+          <div className="text-center py-8">Loading idea data...</div>
+        ) : (
+          <MultiStepForm
+            steps={steps}
+            onSubmit={handleSubmit}
+            initialData={initialData}
+          />
+        )}
       </div>
     </div>
+  );
+}
+
+export default function ApplyPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background py-16 px-4 flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <ApplyPageContent />
+    </Suspense>
   );
 }

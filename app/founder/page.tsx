@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -37,6 +37,9 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import Link from "next/link";
+import { getIdeas } from "@/lib/api";
+import { getToken } from "@/lib/auth";
+import { deleteIdea } from "@/lib/api";
 
 export default function FounderDashboardPage() {
   return (
@@ -48,6 +51,45 @@ export default function FounderDashboardPage() {
 
 function FounderDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [ideas, setIdeas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchIdeas = async () => {
+      try {
+        const token = getToken();
+        if (token) {
+          const ideasData = await getIdeas(token);
+          setIdeas(ideasData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch ideas:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIdeas();
+  }, []);
+
+  const handleDeleteIdea = async (ideaId: number) => {
+    if (!confirm("Are you sure you want to delete this idea?")) return;
+
+    try {
+      setDeletingId(ideaId);
+      const token = getToken();
+      if (token) {
+        await deleteIdea(token, ideaId);
+        setIdeas(ideas.filter((idea: any) => idea.id !== ideaId));
+      }
+    } catch (error) {
+      console.error("Failed to delete idea:", error);
+      alert("Failed to delete idea. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   // Mock data for founder's startup
   const startupMetrics = [
@@ -173,7 +215,7 @@ function FounderDashboard() {
             <Button className="bg-aau-blue hover:bg-aau-blue/90" asChild>
               <Link href="/apply">
                 <Plus className="h-4 w-4 mr-2" />
-                New Application
+                New Idea
               </Link>
             </Button>
           </div>
@@ -190,7 +232,7 @@ function FounderDashboard() {
           >
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="applications">My Applications</TabsTrigger>
+              <TabsTrigger value="applications">My Ideas</TabsTrigger>
               <TabsTrigger value="startup">Startup Progress</TabsTrigger>
               <TabsTrigger value="meetings">Meetings</TabsTrigger>
             </TabsList>
@@ -358,63 +400,67 @@ function FounderDashboard() {
 
             {/* Applications Tab */}
             <TabsContent value="applications" className="space-y-6">
-              <div className="space-y-4">
-                {applications.map((application) => (
-                  <Card key={application.id}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">
-                            {application.title}
-                          </CardTitle>
-                          <CardDescription>
-                            Submitted on{" "}
-                            {new Date(
-                              application.submittedAt
-                            ).toLocaleDateString()}
-                          </CardDescription>
+              {loading ? (
+                <div className="text-center py-8">Loading ideas...</div>
+              ) : ideas.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <p className="text-muted-foreground mb-4">
+                      No ideas submitted yet.
+                    </p>
+                    <Button asChild>
+                      <Link href="/apply">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Submit Your First Idea
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {ideas.map((idea: any) => (
+                    <Card key={idea.id}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg">
+                              {idea.title}
+                            </CardTitle>
+                            <CardDescription>
+                              Submitted on{" "}
+                              {new Date(idea.created_at).toLocaleDateString()}
+                            </CardDescription>
+                          </div>
+                          <Badge className={getStatusColor(idea.status)}>
+                            {idea.status.replace("_", " ")}
+                          </Badge>
                         </div>
-                        <Badge className={getStatusColor(application.status)}>
-                          {application.status.replace("_", " ")}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {application.feedback && (
-                        <div className="bg-muted/50 p-4 rounded-lg mb-4">
-                          <h4 className="font-medium mb-2">
-                            Reviewer Feedback
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            {application.feedback}
-                          </p>
-                          {application.reviewedAt && (
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Reviewed on{" "}
-                              {new Date(
-                                application.reviewedAt
-                              ).toLocaleDateString()}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          View Details
-                        </Button>
-                        {application.status === "needs_info" && (
-                          <Button
-                            size="sm"
-                            className="bg-aau-blue hover:bg-aau-blue/90"
-                          >
-                            Update Application
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {idea.description}
+                        </p>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            View Details
                           </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/apply?edit=${idea.id}`}>Edit</Link>
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteIdea(idea.id)}
+                            disabled={deletingId === idea.id}
+                          >
+                            {deletingId === idea.id ? "Deleting..." : "Delete"}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             {/* Startup Progress Tab */}
