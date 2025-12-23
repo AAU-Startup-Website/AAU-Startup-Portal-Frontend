@@ -246,7 +246,10 @@ export function StartupProgressTab({
                     id="title"
                     value={newMilestone.title}
                     onChange={(e) =>
-                      setNewMilestone({ ...newMilestone, title: e.target.value })
+                      setNewMilestone({
+                        ...newMilestone,
+                        title: e.target.value,
+                      })
                     }
                     placeholder="Enter milestone title"
                   />
@@ -307,7 +310,9 @@ export function StartupProgressTab({
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleCreateMilestone}>Create Milestone</Button>
+                <Button onClick={handleCreateMilestone}>
+                  Create Milestone
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -348,41 +353,44 @@ export function StartupProgressTab({
         {/* Phases Tab */}
         <TabsContent value="phases" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {phases.map((phase) => {
-              const phaseMilestones = milestones.filter(
-                (m) => m.phase === phase.id
-              );
-              const completedMilestones = phaseMilestones.filter(
-                (m) => m.completed
-              ).length;
-              const phaseProgress =
-                phaseMilestones.length > 0
-                  ? Math.round((completedMilestones / phaseMilestones.length) * 100)
-                  : 0;
+            {phases
+              .sort((a, b) => a.order - b.order)
+              .map((phase) => {
+                const phaseMilestones = milestones.filter(
+                  (m) => m.phase === phase.id
+                );
+                const completedMilestones = phaseMilestones.filter(
+                  (m) => m.completed
+                ).length;
+                const phaseProgress =
+                  phaseMilestones.length > 0
+                    ? Math.round(
+                        (completedMilestones / phaseMilestones.length) * 100
+                      )
+                    : 0;
 
-              return (
-                <Card key={phase.id}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">{phase.name}</CardTitle>
-                    <CardDescription>
-                      Phase {phase.order}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Progress</span>
-                        <span>{phaseProgress}%</span>
+                return (
+                  <Card key={phase.id}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg">{phase.name}</CardTitle>
+                      <CardDescription>Phase {phase.order}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Progress</span>
+                          <span>{phaseProgress}%</span>
+                        </div>
+                        <Progress value={phaseProgress} className="h-2" />
+                        <p className="text-xs text-muted-foreground">
+                          {completedMilestones} of {phaseMilestones.length}{" "}
+                          milestones
+                        </p>
                       </div>
-                      <Progress value={phaseProgress} className="h-2" />
-                      <p className="text-xs text-muted-foreground">
-                        {completedMilestones} of {phaseMilestones.length} milestones
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    </CardContent>
+                  </Card>
+                );
+              })}
           </div>
         </TabsContent>
 
@@ -393,7 +401,9 @@ export function StartupProgressTab({
               <CardContent className="py-8">
                 <div className="text-center">
                   <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No Milestones Yet</h3>
+                  <h3 className="text-lg font-medium mb-2">
+                    No Milestones Yet
+                  </h3>
                   <p className="text-muted-foreground">
                     {userRole === "mentor"
                       ? "Create the first milestone to help track progress."
@@ -404,69 +414,74 @@ export function StartupProgressTab({
             </Card>
           ) : (
             <div className="space-y-4">
-              {phases.map((phase) => {
-                const phaseMilestones = milestones.filter(
-                  (m) => m.phase === phase.id
-                );
-                if (phaseMilestones.length === 0) return null;
+              {phases
+                .sort((a, b) => a.order - b.order)
+                .map((phase) => {
+                  const phaseMilestones = milestones.filter(
+                    (m) => m.phase === phase.id
+                  );
+                  if (phaseMilestones.length === 0) return null;
 
-                return (
-                  <Card key={phase.id}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Badge variant="outline" className="mr-2">
-                          Phase {phase.order}
-                        </Badge>
-                        {phase.name}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {phaseMilestones.map((milestone) => (
-                          <div
-                            key={milestone.id}
-                            className="flex items-start space-x-3 p-3 border rounded-lg"
-                          >
-                            <Checkbox
-                              checked={milestone.completed}
-                              onCheckedChange={() =>
-                                handleToggleMilestone(milestone)
-                              }
-                              disabled={userRole !== "founder"}
-                              className="mt-1"
-                            />
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center space-x-2">
-                                <h4
-                                  className={`font-medium ${
-                                    milestone.completed
-                                      ? "line-through text-muted-foreground"
-                                      : ""
-                                  }`}
-                                >
-                                  {milestone.title}
-                                </h4>
-                                {milestone.completed && (
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                )}
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                {milestone.description}
-                              </p>
-                              <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                                <div className="flex items-center">
-                                  <Calendar className="h-3 w-3 mr-1" />
-                                  Due: {new Date(milestone.due_date).toLocaleDateString()}
+                  return (
+                    <Card key={phase.id}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Badge variant="outline" className="mr-2">
+                            Phase {phase.order}
+                          </Badge>
+                          {phase.name}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {phaseMilestones.map((milestone) => (
+                            <div
+                              key={milestone.id}
+                              className="flex items-start space-x-3 p-3 border rounded-lg"
+                            >
+                              <Checkbox
+                                checked={milestone.completed}
+                                onCheckedChange={() =>
+                                  handleToggleMilestone(milestone)
+                                }
+                                disabled={userRole !== "founder"}
+                                className="mt-1"
+                              />
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center space-x-2">
+                                  <h4
+                                    className={`font-medium ${
+                                      milestone.completed
+                                        ? "line-through text-muted-foreground"
+                                        : ""
+                                    }`}
+                                  >
+                                    {milestone.title}
+                                  </h4>
+                                  {milestone.completed && (
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {milestone.description}
+                                </p>
+                                <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                                  <div className="flex items-center">
+                                    <Calendar className="h-3 w-3 mr-1" />
+                                    Due:{" "}
+                                    {new Date(
+                                      milestone.due_date
+                                    ).toLocaleDateString()}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
             </div>
           )}
         </TabsContent>

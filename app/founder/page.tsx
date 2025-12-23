@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -50,6 +51,7 @@ import {
   getStartups,
   getMilestones,
   updateMilestone,
+  getPhases,
 } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
@@ -70,6 +72,7 @@ function FounderDashboard() {
   const [selectedStartup, setSelectedStartup] = useState<any>(null);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [milestonesLoading, setMilestonesLoading] = useState(false);
+  const [phases, setPhases] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -107,6 +110,18 @@ function FounderDashboard() {
               },
             ]);
           }
+
+          // Fetch phases
+          console.log("Fetching phases...");
+          try {
+            const phasesData = await getPhases(token);
+            console.log("Phases data:", phasesData);
+            setPhases(phasesData);
+          } catch (phasesError) {
+            console.error("Failed to fetch phases:", phasesError);
+            // Set empty phases array - UI will handle gracefully
+            setPhases([]);
+          }
         } else {
           console.log("No token found");
         }
@@ -122,7 +137,7 @@ function FounderDashboard() {
 
   useEffect(() => {
     const fetchMilestones = async () => {
-      if (selectedStartup && selectedStartup.current_phase) {
+      if (selectedStartup) {
         try {
           setMilestonesLoading(true);
           const token = getToken();
@@ -130,34 +145,49 @@ function FounderDashboard() {
             try {
               const milestonesData = await getMilestones(
                 token,
-                selectedStartup.id,
-                selectedStartup.current_phase
+                selectedStartup.id
               );
-              console.log("Milestones data:", milestonesData);
+              console.log(
+                "Milestones data for startup",
+                selectedStartup.id,
+                ":",
+                milestonesData
+              );
               setMilestones(milestonesData);
             } catch (milestonesError) {
               console.error("Failed to fetch milestones:", milestonesError);
-              // Mock milestones for testing
-              setMilestones([
+              // Mock milestones for testing - different for each startup
+              const mockMilestones = [
                 {
-                  id: 1,
-                  title: "Complete MVP Development",
-                  description: "Finish core product features",
+                  id: selectedStartup.id * 10 + 1,
+                  title: `Market Research for ${selectedStartup.name}`,
+                  description:
+                    "Conduct comprehensive market research and competitor analysis",
                   due_date: "2024-11-30",
                   completed: false,
                   startup: selectedStartup.id,
-                  phase: selectedStartup.current_phase,
+                  phase: 1,
                 },
                 {
-                  id: 2,
-                  title: "Launch Beta Testing",
-                  description: "Release beta to early users",
+                  id: selectedStartup.id * 10 + 2,
+                  title: `MVP Development for ${selectedStartup.name}`,
+                  description: "Build and test minimum viable product",
                   due_date: "2024-12-15",
-                  completed: true,
+                  completed: selectedStartup.id === 1, // First startup has completed milestone
                   startup: selectedStartup.id,
-                  phase: selectedStartup.current_phase,
+                  phase: 2,
                 },
-              ]);
+                {
+                  id: selectedStartup.id * 10 + 3,
+                  title: `User Testing for ${selectedStartup.name}`,
+                  description: "Conduct user testing and gather feedback",
+                  due_date: "2024-12-30",
+                  completed: false,
+                  startup: selectedStartup.id,
+                  phase: 3,
+                },
+              ];
+              setMilestones(mockMilestones);
             }
           }
         } catch (error) {
@@ -593,6 +623,12 @@ function FounderDashboard() {
                           <div className="text-center py-8">
                             Loading milestones...
                           </div>
+                        ) : phases.length === 0 ? (
+                          <div className="text-center py-8">
+                            <p className="text-muted-foreground">
+                              Loading phases...
+                            </p>
+                          </div>
                         ) : milestones.length > 0 ? (
                           <div className="space-y-6">
                             <div className="text-center">
@@ -618,54 +654,83 @@ function FounderDashboard() {
                                 className="mt-2"
                               />
                             </div>
-                            <div className="space-y-4">
-                              {milestones.map((milestone) => (
-                                <div
-                                  key={milestone.id}
-                                  className="flex items-center justify-between p-4 border rounded-lg"
-                                >
-                                  <div className="flex items-center space-x-3">
-                                    <input
-                                      type="checkbox"
-                                      checked={milestone.completed}
-                                      onChange={() =>
-                                        handleToggleMilestone(milestone)
-                                      }
-                                      className="h-4 w-4"
-                                    />
-                                    <div>
-                                      <h4 className="font-medium">
-                                        {milestone.title}
-                                      </h4>
-                                      <p className="text-sm text-muted-foreground">
-                                        Due:{" "}
-                                        {new Date(
-                                          milestone.due_date
-                                        ).toLocaleDateString()}
-                                      </p>
-                                      {milestone.description && (
-                                        <p className="text-sm text-muted-foreground mt-1">
-                                          {milestone.description}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    {milestone.completed ? (
-                                      <CheckCircle className="h-5 w-5 text-green-600" />
-                                    ) : (
-                                      <Clock className="h-5 w-5 text-gray-400" />
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+
+                            {/* Group milestones by phase */}
+                            {phases
+                              .sort((a, b) => a.order - b.order)
+                              .map((phase) => {
+                                const phaseMilestones = milestones.filter(
+                                  (m) => m.phase === phase.id
+                                );
+                                if (phaseMilestones.length === 0) return null;
+
+                                return (
+                                  <Card key={phase.id}>
+                                    <CardHeader>
+                                      <CardTitle className="flex items-center">
+                                        <Badge
+                                          variant="outline"
+                                          className="mr-2"
+                                        >
+                                          Phase {phase.order}
+                                        </Badge>
+                                        {phase.name}
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className="space-y-3">
+                                        {phaseMilestones.map((milestone) => (
+                                          <div
+                                            key={milestone.id}
+                                            className="flex items-start space-x-3 p-3 border rounded-lg"
+                                          >
+                                            <Checkbox
+                                              checked={milestone.completed}
+                                              onCheckedChange={() =>
+                                                handleToggleMilestone(milestone)
+                                              }
+                                              className="mt-1"
+                                            />
+                                            <div className="flex-1 space-y-1">
+                                              <div className="flex items-center space-x-2">
+                                                <h4
+                                                  className={`font-medium ${
+                                                    milestone.completed
+                                                      ? "line-through text-muted-foreground"
+                                                      : ""
+                                                  }`}
+                                                >
+                                                  {milestone.title}
+                                                </h4>
+                                                {milestone.completed && (
+                                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                                )}
+                                              </div>
+                                              <p className="text-sm text-muted-foreground">
+                                                {milestone.description}
+                                              </p>
+                                              <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                                                <div className="flex items-center">
+                                                  <Calendar className="h-3 w-3 mr-1" />
+                                                  Due:{" "}
+                                                  {new Date(
+                                                    milestone.due_date
+                                                  ).toLocaleDateString()}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                );
+                              })}
                           </div>
                         ) : (
                           <div className="text-center py-8">
                             <p className="text-muted-foreground">
-                              No milestones found for the current phase of this
-                              startup.
+                              No milestones found for this startup.
                             </p>
                           </div>
                         )}
