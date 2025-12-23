@@ -13,6 +13,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   XAxis,
   YAxis,
   CartesianGrid,
@@ -37,9 +44,14 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import Link from "next/link";
-import { getIdeas } from "@/lib/api";
+import {
+  getIdeas,
+  deleteIdea,
+  getStartups,
+  getMilestones,
+  updateMilestone,
+} from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import { deleteIdea } from "@/lib/api";
 
 export default function FounderDashboardPage() {
   return (
@@ -54,24 +66,110 @@ function FounderDashboard() {
   const [ideas, setIdeas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [startups, setStartups] = useState<any[]>([]);
+  const [selectedStartup, setSelectedStartup] = useState<any>(null);
+  const [milestones, setMilestones] = useState<any[]>([]);
+  const [milestonesLoading, setMilestonesLoading] = useState(false);
 
   useEffect(() => {
-    const fetchIdeas = async () => {
+    const fetchData = async () => {
       try {
         const token = getToken();
+        console.log("Token:", token);
         if (token) {
+          // Fetch ideas
+          console.log("Fetching ideas...");
           const ideasData = await getIdeas(token);
+          console.log("Ideas data:", ideasData);
           setIdeas(ideasData);
+
+          // Fetch all startups for the founder
+          console.log("Fetching startups...");
+          try {
+            const startupsData = await getStartups(token);
+            console.log("Startups data:", startupsData);
+            setStartups(startupsData);
+          } catch (startupsError) {
+            console.error("Failed to fetch startups:", startupsError);
+            // Mock data for testing
+            setStartups([
+              {
+                id: 1,
+                name: "My First Startup",
+                current_phase: 1,
+                phase_details: { id: 1, name: "Ideation", order: 1 },
+              },
+              {
+                id: 2,
+                name: "Second Venture",
+                current_phase: 2,
+                phase_details: { id: 2, name: "Development", order: 2 },
+              },
+            ]);
+          }
+        } else {
+          console.log("No token found");
         }
       } catch (error) {
-        console.error("Failed to fetch ideas:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchIdeas();
+    fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchMilestones = async () => {
+      if (selectedStartup && selectedStartup.current_phase) {
+        try {
+          setMilestonesLoading(true);
+          const token = getToken();
+          if (token) {
+            try {
+              const milestonesData = await getMilestones(
+                token,
+                selectedStartup.id,
+                selectedStartup.current_phase
+              );
+              console.log("Milestones data:", milestonesData);
+              setMilestones(milestonesData);
+            } catch (milestonesError) {
+              console.error("Failed to fetch milestones:", milestonesError);
+              // Mock milestones for testing
+              setMilestones([
+                {
+                  id: 1,
+                  title: "Complete MVP Development",
+                  description: "Finish core product features",
+                  due_date: "2024-11-30",
+                  completed: false,
+                  startup: selectedStartup.id,
+                  phase: selectedStartup.current_phase,
+                },
+                {
+                  id: 2,
+                  title: "Launch Beta Testing",
+                  description: "Release beta to early users",
+                  due_date: "2024-12-15",
+                  completed: true,
+                  startup: selectedStartup.id,
+                  phase: selectedStartup.current_phase,
+                },
+              ]);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch milestones:", error);
+        } finally {
+          setMilestonesLoading(false);
+        }
+      }
+    };
+
+    fetchMilestones();
+  }, [selectedStartup]);
 
   const handleDeleteIdea = async (ideaId: number) => {
     if (!confirm("Are you sure you want to delete this idea?")) return;
@@ -88,6 +186,32 @@ function FounderDashboard() {
       alert("Failed to delete idea. Please try again.");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleToggleMilestone = async (milestone: any) => {
+    try {
+      const token = getToken();
+      if (token) {
+        try {
+          await updateMilestone(token, milestone.id, {
+            completed: !milestone.completed,
+          });
+          console.log("Milestone updated successfully");
+        } catch (updateError) {
+          console.error("Failed to update milestone on server:", updateError);
+          // Still update local state for UI feedback
+        }
+      }
+      // Update local state
+      setMilestones(
+        milestones.map((m) =>
+          m.id === milestone.id ? { ...m, completed: !m.completed } : m
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update milestone:", error);
+      alert("Failed to update milestone. Please try again.");
     }
   };
 
@@ -145,33 +269,6 @@ function FounderDashboard() {
     },
   ];
 
-  const milestones = [
-    {
-      title: "Complete MVP Development",
-      progress: 100,
-      dueDate: "2024-11-30",
-      status: "completed",
-    },
-    {
-      title: "Launch Beta Testing",
-      progress: 75,
-      dueDate: "2024-12-15",
-      status: "in_progress",
-    },
-    {
-      title: "Secure Seed Funding",
-      progress: 30,
-      dueDate: "2025-01-31",
-      status: "in_progress",
-    },
-    {
-      title: "Hire 5 Team Members",
-      progress: 0,
-      dueDate: "2025-02-28",
-      status: "pending",
-    },
-  ];
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
@@ -184,19 +281,6 @@ function FounderDashboard() {
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getMilestoneIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case "in_progress":
-        return <Clock className="h-4 w-4 text-yellow-600" />;
-      case "pending":
-        return <AlertTriangle className="h-4 w-4 text-gray-400" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-400" />;
     }
   };
 
@@ -473,25 +557,120 @@ function FounderDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-6">
-                    {milestones.map((milestone, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            {getMilestoneIcon(milestone.status)}
-                            <h4 className="font-medium">{milestone.title}</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">
+                        Select Startup
+                      </label>
+                      <Select
+                        value={selectedStartup?.id?.toString() || ""}
+                        onValueChange={(value) => {
+                          const startup = startups.find(
+                            (s) => s.id.toString() === value
+                          );
+                          setSelectedStartup(startup || null);
+                        }}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Choose a startup to view milestones" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {startups.map((startup) => (
+                            <SelectItem
+                              key={startup.id}
+                              value={startup.id.toString()}
+                            >
+                              {startup.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {selectedStartup && (
+                      <>
+                        {milestonesLoading ? (
+                          <div className="text-center py-8">
+                            Loading milestones...
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            Due:{" "}
-                            {new Date(milestone.dueDate).toLocaleDateString()}
+                        ) : milestones.length > 0 ? (
+                          <div className="space-y-6">
+                            <div className="text-center">
+                              <div className="text-2xl font-bold">
+                                {Math.round(
+                                  (milestones.filter((m) => m.completed)
+                                    .length /
+                                    milestones.length) *
+                                    100
+                                )}
+                                %
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Complete
+                              </p>
+                              <Progress
+                                value={
+                                  (milestones.filter((m) => m.completed)
+                                    .length /
+                                    milestones.length) *
+                                  100
+                                }
+                                className="mt-2"
+                              />
+                            </div>
+                            <div className="space-y-4">
+                              {milestones.map((milestone) => (
+                                <div
+                                  key={milestone.id}
+                                  className="flex items-center justify-between p-4 border rounded-lg"
+                                >
+                                  <div className="flex items-center space-x-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={milestone.completed}
+                                      onChange={() =>
+                                        handleToggleMilestone(milestone)
+                                      }
+                                      className="h-4 w-4"
+                                    />
+                                    <div>
+                                      <h4 className="font-medium">
+                                        {milestone.title}
+                                      </h4>
+                                      <p className="text-sm text-muted-foreground">
+                                        Due:{" "}
+                                        {new Date(
+                                          milestone.due_date
+                                        ).toLocaleDateString()}
+                                      </p>
+                                      {milestone.description && (
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                          {milestone.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    {milestone.completed ? (
+                                      <CheckCircle className="h-5 w-5 text-green-600" />
+                                    ) : (
+                                      <Clock className="h-5 w-5 text-gray-400" />
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <Progress value={milestone.progress} className="h-2" />
-                        <div className="text-sm text-muted-foreground">
-                          {milestone.progress}% complete
-                        </div>
-                      </div>
-                    ))}
+                        ) : (
+                          <div className="text-center py-8">
+                            <p className="text-muted-foreground">
+                              No milestones found for the current phase of this
+                              startup.
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>

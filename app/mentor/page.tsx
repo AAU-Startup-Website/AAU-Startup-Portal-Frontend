@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,6 +22,9 @@ import {
   Plus,
 } from "lucide-react";
 import Link from "next/link";
+import { getStartups } from "@/lib/api";
+import { getToken } from "@/lib/auth";
+import { StartupProgressTab } from "@/components/startup/StartupProgressTab";
 
 export default function MentorDashboardPage() {
   return (
@@ -33,45 +36,95 @@ export default function MentorDashboardPage() {
 
 function MentorDashboard() {
   const [activeTab, setActiveTab] = useState("startups");
+  const [assignedStartups, setAssignedStartups] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedStartup, setSelectedStartup] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<"list" | "progress">("list");
 
-  const assignedStartups = [
-    {
-      id: 1,
-      name: "EthioPay Solutions",
-      founder: "Meron Tadesse",
-      sector: "FinTech",
-      stage: "Series A",
-      progress: 85,
-      lastMeeting: "2024-12-10",
-      nextMeeting: "2024-12-15",
-      status: "on_track",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: 2,
-      name: "HealthConnect Ethiopia",
-      founder: "Daniel Bekele",
-      sector: "HealthTech",
-      stage: "Seed",
-      progress: 60,
-      lastMeeting: "2024-12-08",
-      nextMeeting: "2024-12-18",
-      status: "needs_attention",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: 3,
-      name: "EduTech Africa",
-      founder: "Sara Ahmed",
-      sector: "EdTech",
-      stage: "MVP",
-      progress: 40,
-      lastMeeting: "2024-12-05",
-      nextMeeting: "2024-12-20",
-      status: "on_track",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-  ];
+  useEffect(() => {
+    const fetchAssignedStartups = async () => {
+      try {
+        const token = getToken();
+        console.log("Token:", token);
+        if (token) {
+          console.log("Fetching assigned startups for mentor...");
+          const startupsData = await getStartups(token);
+          console.log("Assigned startups data:", startupsData);
+          
+          // Transform API data to match expected format for mentor dashboard
+          const transformedStartups = startupsData.map((startup: any) => ({
+            id: startup.id,
+            name: startup.name,
+            founder: startup.founder_name || "Unknown Founder",
+            sector: startup.sector || "Technology",
+            stage: startup.stage || "Early Stage",
+            progress: startup.progress || Math.floor(Math.random() * 100), // Temporary random progress
+            lastMeeting: startup.last_meeting || new Date().toISOString().split('T')[0],
+            nextMeeting: startup.next_meeting || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: startup.status || "on_track",
+            avatar: startup.logo || "/placeholder.svg?height=40&width=40",
+          }));
+          
+          setAssignedStartups(transformedStartups);
+        }
+      } catch (error) {
+        console.error("Failed to fetch assigned startups:", error);
+        // Mock data for testing
+        setAssignedStartups([
+          {
+            id: 1,
+            name: "EthioPay Solutions",
+            founder: "Meron Tadesse",
+            sector: "FinTech",
+            stage: "Series A",
+            progress: 85,
+            lastMeeting: "2024-12-10",
+            nextMeeting: "2024-12-15",
+            status: "on_track",
+            avatar: "/placeholder.svg?height=40&width=40",
+          },
+          {
+            id: 2,
+            name: "AgriTech Ethiopia",
+            founder: "Dawit Kebede",
+            sector: "Agriculture",
+            stage: "Seed",
+            progress: 60,
+            lastMeeting: "2024-12-08",
+            nextMeeting: "2024-12-20",
+            status: "needs_attention",
+            avatar: "/placeholder.svg?height=40&width=40",
+          },
+          {
+            id: 3,
+            name: "EduConnect",
+            founder: "Hana Mengistu",
+            sector: "Education",
+            stage: "Pre-seed",
+            progress: 40,
+            lastMeeting: "2024-12-05",
+            nextMeeting: "2024-12-18",
+            status: "on_track",
+            avatar: "/placeholder.svg?height=40&width=40",
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssignedStartups();
+  }, []);
+
+  const handleViewStartupDetails = (startup: any) => {
+    setSelectedStartup(startup);
+    setViewMode("progress");
+  };
+
+  const handleBackToStartups = () => {
+    setSelectedStartup(null);
+    setViewMode("list");
+  };
 
   const upcomingMeetings = [
     {
@@ -158,23 +211,35 @@ function MentorDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <section className="bg-muted/30 py-12 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Mentor Dashboard</h1>
-              <p className="text-xl text-muted-foreground">
-                Guide and support your assigned startups
-              </p>
-            </div>
-            <Button className="bg-aau-blue hover:bg-aau-blue/90">
-              <Plus className="h-4 w-4 mr-2" />
-              Schedule Meeting
-            </Button>
+      {viewMode === "progress" && selectedStartup ? (
+        <section className="py-12 px-4">
+          <div className="container mx-auto max-w-7xl">
+            <StartupProgressTab
+              startup={selectedStartup}
+              onBack={handleBackToStartups}
+              userRole="mentor"
+            />
           </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <>
+          {/* Header */}
+          <section className="bg-muted/30 py-12 px-4">
+            <div className="container mx-auto max-w-7xl">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+                <div>
+                  <h1 className="text-4xl font-bold mb-2">Mentor Dashboard</h1>
+                  <p className="text-xl text-muted-foreground">
+                    Guide and support your assigned startups
+                  </p>
+                </div>
+                <Button className="bg-aau-blue hover:bg-aau-blue/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Schedule Meeting
+                </Button>
+              </div>
+            </div>
+          </section>
 
       {/* Main Content */}
       <section className="py-12 px-4">
@@ -249,7 +314,16 @@ function MentorDashboard() {
 
               {/* Startup Cards */}
               <div className="space-y-4">
-                {assignedStartups.map((startup) => (
+                {loading ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Loading assigned startups...</p>
+                  </div>
+                ) : assignedStartups.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No assigned startups yet.</p>
+                  </div>
+                ) : (
+                  assignedStartups.map((startup) => (
                   <Card
                     key={startup.id}
                     className="hover:shadow-md transition-shadow"
@@ -314,7 +388,11 @@ function MentorDashboard() {
                       </div>
 
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewStartupDetails(startup)}
+                        >
                           View Details
                         </Button>
                         <Button variant="outline" size="sm">
@@ -329,7 +407,8 @@ function MentorDashboard() {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                ))
+                )}
               </div>
             </TabsContent>
 
@@ -523,6 +602,8 @@ function MentorDashboard() {
           </Tabs>
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }

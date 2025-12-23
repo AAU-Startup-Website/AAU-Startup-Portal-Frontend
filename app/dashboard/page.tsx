@@ -107,6 +107,7 @@ function AdminDashboard() {
     try {
       setProcessingId(selectedIdea.id);
       const token = getToken();
+      console.log("Token:", token);
       if (token) {
         await approveIdea(token, selectedIdea.id, feedback);
         await fetchAllIdeas(); // Refresh the list

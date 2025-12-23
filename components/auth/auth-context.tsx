@@ -74,42 +74,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      if (data.token) {
+      const token = data.token;
+      if (token) {
         // Store token for API calls
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("authToken", token);
 
-        // Get user profile
-        const profileResponse = await fetch(`${API_BASE_URL}/users/profile/`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${data.token}`,
-          },
-        });
+        // Use data from login response
+        const backendRole = data.role;
+        const frontendRole =
+          backendRole === "student" ? "founder" : backendRole;
 
-        if (profileResponse.ok) {
-          const profile = await profileResponse.json();
-
-          const backendRole = profile.profile?.role;
-          // Map backend role to frontend role
-          const frontendRole =
-            backendRole === "student" ? "founder" : backendRole;
-
-          const appUser: AppUser = {
-            id:
-              profile.id?.toString() || data.user?.id?.toString() || "mock-id",
-            email: profile.email || email,
-            name: profile.username || profile.name || null,
-            role: frontendRole || "founder",
-            avatar: profile.avatar || null,
-            department: profile.profile?.bio || null,
-          };
-          setUser(appUser);
-          localStorage.setItem("auth_user", JSON.stringify(appUser));
-          setLoading(false);
-          return appUser;
-        }
+        const appUser: AppUser = {
+          id: data.user_id?.toString() || "mock-id",
+          email: data.username || email,
+          name: data.username || null,
+          role: frontendRole || "founder",
+          avatar: null,
+          department: null,
+        };
+        setUser(appUser);
+        localStorage.setItem("auth_user", JSON.stringify(appUser));
+        setLoading(false);
+        return appUser;
+      } else {
+        throw new Error("Login failed: No token received");
       }
-      throw new Error("Login failed: No token received");
     } catch (error) {
       setLoading(false);
       throw error;
