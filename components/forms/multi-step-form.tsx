@@ -1,76 +1,91 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, ChevronRight, Check } from "lucide-react"
+import { useState, useCallback, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 
 interface Step {
-  id: string
-  title: string
-  description: string
-  component: React.ComponentType<any>
-  validation?: (data: any) => string[]
+  id: string;
+  title: string;
+  description: string;
+  component: React.ComponentType<any>;
+  validation?: (data: any) => string[];
 }
 
 interface MultiStepFormProps {
-  steps: Step[]
-  onSubmit: (data: any) => void
-  initialData?: any
+  steps: Step[];
+  onSubmit: (data: any) => void;
+  initialData?: any;
 }
 
-export function MultiStepForm({ steps, onSubmit, initialData = {} }: MultiStepFormProps) {
-  const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState(initialData)
-  const [errors, setErrors] = useState<string[]>([])
-  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
+export function MultiStepForm({
+  steps,
+  onSubmit,
+  initialData = {},
+}: MultiStepFormProps) {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState(initialData);
+  const [errors, setErrors] = useState<string[]>([]);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
-  const updateFormData = useCallback((stepData: any) => {
-    setFormData((prev) => ({ ...prev, ...stepData }))
-  }, [])
+  const updateFormData = useCallback(
+    (stepData: any) => {
+      setFormData((prev) => ({ ...prev, ...stepData }));
+    },
+    [setFormData]
+  );
 
   const validateCurrentStep = () => {
-    const currentStepConfig = steps[currentStep]
+    const currentStepConfig = steps[currentStep];
     if (currentStepConfig.validation) {
-      const stepErrors = currentStepConfig.validation(formData)
-      setErrors(stepErrors)
-      return stepErrors.length === 0
+      const stepErrors = currentStepConfig.validation(formData);
+      setErrors(stepErrors);
+      return stepErrors.length === 0;
     }
-    return true
-  }
+    return true;
+  };
 
   const handleNext = () => {
     if (validateCurrentStep()) {
-      setCompletedSteps((prev) => new Set([...prev, currentStep]))
+      setCompletedSteps((prev) => new Set([...prev, currentStep]));
       if (currentStep < steps.length - 1) {
-        setCurrentStep(currentStep + 1)
-        setErrors([])
+        setCurrentStep(currentStep + 1);
+        setErrors([]);
       } else {
-        onSubmit(formData)
+        onSubmit(formData);
       }
     }
-  }
+  };
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
-      setErrors([])
+      setCurrentStep(currentStep - 1);
+      setErrors([]);
     }
-  }
+  };
 
   const handleStepClick = (stepIndex: number) => {
     if (stepIndex <= currentStep || completedSteps.has(stepIndex)) {
-      setCurrentStep(stepIndex)
-      setErrors([])
+      setCurrentStep(stepIndex);
+      setErrors([]);
     }
-  }
+  };
 
-  const progress = ((currentStep + 1) / steps.length) * 100
-  const CurrentStepComponent = steps[currentStep].component
+  const progress = ((currentStep + 1) / steps.length) * 100;
+  const CurrentStepComponent = steps[currentStep].component;
+
+  // If the parent provides `initialData` (for editing), sync it into local state.
+  // This ensures the form reflects loaded data instead of remaining empty.
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -105,10 +120,10 @@ export function MultiStepForm({ steps, onSubmit, initialData = {} }: MultiStepFo
                   index === currentStep
                     ? "border-aau-blue bg-aau-blue text-white"
                     : completedSteps.has(index)
-                      ? "border-green-500 bg-green-500 text-white"
-                      : index < currentStep
-                        ? "border-aau-blue text-aau-blue hover:bg-aau-blue hover:text-white cursor-pointer"
-                        : "border-muted-foreground/30 text-muted-foreground"
+                    ? "border-green-500 bg-green-500 text-white"
+                    : index < currentStep
+                    ? "border-aau-blue text-aau-blue hover:bg-aau-blue hover:text-white cursor-pointer"
+                    : "border-muted-foreground/30 text-muted-foreground"
                 }`}
                 disabled={index > currentStep && !completedSteps.has(index)}
               >
@@ -120,7 +135,11 @@ export function MultiStepForm({ steps, onSubmit, initialData = {} }: MultiStepFo
               </button>
               {index < steps.length - 1 && (
                 <div
-                  className={`w-12 h-0.5 mx-2 ${completedSteps.has(index) ? "bg-green-500" : "bg-muted-foreground/30"}`}
+                  className={`w-12 h-0.5 mx-2 ${
+                    completedSteps.has(index)
+                      ? "bg-green-500"
+                      : "bg-muted-foreground/30"
+                  }`}
                 />
               )}
             </div>
@@ -132,13 +151,17 @@ export function MultiStepForm({ steps, onSubmit, initialData = {} }: MultiStepFo
       <Card>
         <CardHeader>
           <CardTitle>{steps[currentStep].title}</CardTitle>
-          <p className="text-muted-foreground">{steps[currentStep].description}</p>
+          <p className="text-muted-foreground">
+            {steps[currentStep].description}
+          </p>
         </CardHeader>
         <CardContent>
           {/* Error Display */}
           {errors.length > 0 && (
             <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <h4 className="font-medium text-destructive mb-2">Please fix the following errors:</h4>
+              <h4 className="font-medium text-destructive mb-2">
+                Please fix the following errors:
+              </h4>
               <ul className="list-disc list-inside space-y-1">
                 {errors.map((error, index) => (
                   <li key={index} className="text-sm text-destructive">
@@ -150,21 +173,38 @@ export function MultiStepForm({ steps, onSubmit, initialData = {} }: MultiStepFo
           )}
 
           {/* Step Component */}
-          <CurrentStepComponent data={formData} updateData={updateFormData} errors={errors} />
+          <CurrentStepComponent
+            data={formData}
+            updateData={updateFormData}
+            errors={errors}
+          />
         </CardContent>
       </Card>
 
       {/* Navigation Buttons */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 0}>
+        <Button
+          variant="outline"
+          onClick={handlePrevious}
+          disabled={currentStep === 0}
+          className="border-primary text-primary hover:bg-primary/5 hover:text-primary px-4 py-2 rounded-md"
+        >
           <ChevronLeft className="h-4 w-4 mr-2" />
           Previous
         </Button>
-        <Button onClick={handleNext} className="bg-aau-blue hover:bg-aau-blue/90">
-          {currentStep === steps.length - 1 ? "Submit Application" : "Next Step"}
-          {currentStep < steps.length - 1 && <ChevronRight className="h-4 w-4 ml-2" />}
+
+        <Button
+          onClick={handleNext}
+          className="bg-primary text-white hover:bg-primary/90 px-4 py-2 rounded-md"
+        >
+          {currentStep === steps.length - 1
+            ? "Submit Application"
+            : "Next Step"}
+          {currentStep < steps.length - 1 && (
+            <ChevronRight className="h-4 w-4 ml-2" />
+          )}
         </Button>
       </div>
     </div>
-  )
+  );
 }

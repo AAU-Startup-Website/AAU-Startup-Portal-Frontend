@@ -29,13 +29,13 @@ import {
   Users,
   Building2,
   TrendingUp,
-  DollarSign,
   FileText,
   Award,
   ArrowUpRight,
   CheckCircle,
   XCircle,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { getIdeas, approveIdea, rejectIdea } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -66,17 +66,22 @@ function AdminDashboard() {
   // Check if user is admin
   if (!user || user.role !== "admin") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Card className="w-full max-w-md border-[#CAD6DE]">
           <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
+            <CardTitle className="text-[#E63946]">Access Denied</CardTitle>
             <CardDescription>
               You do not have permission to access this page. Admin privileges
               required.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => router.push("/")}>Go Home</Button>
+            <Button
+              className="w-full bg-[#005081] hover:bg-[#015384]"
+              onClick={() => router.push("/")}
+            >
+              Go Home
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -107,7 +112,6 @@ function AdminDashboard() {
     try {
       setProcessingId(selectedIdea.id);
       const token = getToken();
-      console.log("Token:", token);
       if (token) {
         await approveIdea(token, selectedIdea.id, feedback);
         await fetchAllIdeas(); // Refresh the list
@@ -164,7 +168,7 @@ function AdminDashboard() {
     setShowViewDialog(true);
   };
 
-  // Mock data for charts (keeping for now, can be updated with real data later)
+  // --- MOCK DATA FOR CHARTS ---
   const applicationData = [
     { month: "Jan", applications: 45, approved: 12 },
     { month: "Feb", applications: 52, approved: 15 },
@@ -175,19 +179,18 @@ function AdminDashboard() {
   ];
 
   const sectorData = [
-    { name: "FinTech", value: 35, color: "#003DA5" },
-    { name: "HealthTech", value: 25, color: "#FFD700" },
-    { name: "EdTech", value: 20, color: "#10B981" },
-    { name: "AgriTech", value: 15, color: "#F59E0B" },
-    { name: "Other", value: 5, color: "#6B7280" },
+    { name: "FinTech", value: 35, color: "#005081" }, // Primary Blue
+    { name: "HealthTech", value: 25, color: "#4378A0" }, // Secondary Blue
+    { name: "EdTech", value: 20, color: "#CAD6DE" }, // Light Blue
+    { name: "AgriTech", value: 15, color: "#E63946" }, // AAU Red
+    { name: "Other", value: 5, color: "#21282D" }, // Charcoal
   ];
 
-  // Get recent ideas (pending status)
+  // --- METRICS CALCULATION ---
   const recentIdeas = ideas
     .filter((idea: any) => idea.status === "pending")
     .slice(0, 5);
 
-  // Calculate metrics from ideas data
   const totalIdeas = ideas.length;
   const pendingIdeas = ideas.filter(
     (idea: any) => idea.status === "pending"
@@ -195,61 +198,57 @@ function AdminDashboard() {
   const approvedIdeas = ideas.filter(
     (idea: any) => idea.status === "approved"
   ).length;
-  const rejectedIdeas = ideas.filter(
-    (idea: any) => idea.status === "rejected"
-  ).length;
+
   const successRate =
     totalIdeas > 0 ? Math.round((approvedIdeas / totalIdeas) * 100) : 0;
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 border-green-200";
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-50 text-yellow-700 border-yellow-200";
       case "rejected":
-        return "bg-red-100 text-red-800";
+        return "bg-[#E63946]/10 text-[#E63946] border-[#E63946]/20";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-[#CAD6DE]/30 text-[#21282D] border-[#CAD6DE]";
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <section className="bg-muted/30 py-12 px-4">
+    <div className="min-h-screen bg-white text-[#21282D] font-sans">
+      {/* Header Section */}
+      <section className="bg-[#CAD6DE]/30 py-12 px-4 border-b border-[#CAD6DE]">
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div>
-              <h1 className="text-4xl font-bold mb-2">
-                Welcome, {user?.name || "Admin"}!
+              <h1 className="text-4xl font-bold mb-2 text-[#005081]">
+                Welcome, {user?.name || "Admin"}
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-xl text-[#7D818B]">
                 Overview of AAU Startups Portal performance and metrics
               </p>
             </div>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setTimeRange("7d")}
-              >
-                7 Days
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setTimeRange("30d")}
-              >
-                30 Days
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setTimeRange("90d")}
-              >
-                90 Days
-              </Button>
+            <div className="flex space-x-2 bg-white p-1 rounded-lg border border-[#CAD6DE]">
+              {["7d", "30d", "90d"].map((range) => (
+                <Button
+                  key={range}
+                  variant={timeRange === range ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setTimeRange(range)}
+                  className={
+                    timeRange === range
+                      ? "bg-[#005081] text-white hover:bg-[#015384]"
+                      : "text-[#7D818B] hover:text-[#005081] hover:bg-[#CAD6DE]/20"
+                  }
+                >
+                  {range === "30d"
+                    ? "30 Days"
+                    : range === "7d"
+                    ? "7 Days"
+                    : "90 Days"}
+                </Button>
+              ))}
             </div>
           </div>
         </div>
@@ -260,70 +259,70 @@ function AdminDashboard() {
         <div className="container mx-auto max-w-7xl space-y-8">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
+            <Card className="border-[#CAD6DE] shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-[#7D818B]">
                   Total Ideas
                 </CardTitle>
-                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <Building2 className="h-4 w-4 text-[#005081]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-aau-blue">
+                <div className="text-2xl font-bold text-[#21282D]">
                   {totalIdeas}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-green-600">+{pendingIdeas}</span>{" "}
+                <p className="text-xs text-[#7D818B] mt-1">
+                  <span className="text-green-600 font-medium">
+                    +{pendingIdeas}
+                  </span>{" "}
                   pending review
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-[#CAD6DE] shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-[#7D818B]">
                   Pending Review
                 </CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
+                <FileText className="h-4 w-4 text-[#005081]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-aau-blue">
+                <div className="text-2xl font-bold text-[#21282D]">
                   {pendingIdeas}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Awaiting approval
-                </p>
+                <p className="text-xs text-[#7D818B] mt-1">Awaiting approval</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-[#CAD6DE] shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-[#7D818B]">
                   Approved Ideas
                 </CardTitle>
-                <Award className="h-4 w-4 text-muted-foreground" />
+                <Award className="h-4 w-4 text-[#005081]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-aau-blue">
+                <div className="text-2xl font-bold text-[#21282D]">
                   {approvedIdeas}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#7D818B] mt-1">
                   Successfully approved
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-[#CAD6DE] shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-[#7D818B]">
                   Success Rate
                 </CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="h-4 w-4 text-[#005081]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-aau-blue">
+                <div className="text-2xl font-bold text-[#21282D]">
                   {successRate}%
                 </div>
-                <p className="text-xs text-muted-foreground">Approval rate</p>
+                <p className="text-xs text-[#7D818B] mt-1">Approval rate</p>
               </CardContent>
             </Card>
           </div>
@@ -331,36 +330,51 @@ function AdminDashboard() {
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Applications Chart */}
-            <Card>
+            <Card className="border-[#CAD6DE] shadow-sm">
               <CardHeader>
-                <CardTitle>Application Trends</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-[#005081]">
+                  Application Trends
+                </CardTitle>
+                <CardDescription className="text-[#7D818B]">
                   Monthly applications and approval rates
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={applicationData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="month" stroke="#7D818B" />
+                    <YAxis stroke="#7D818B" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#fff",
+                        borderColor: "#CAD6DE",
+                      }}
+                    />
                     <Bar
                       dataKey="applications"
-                      fill="#003DA5"
+                      fill="#005081"
                       name="Applications"
+                      radius={[4, 4, 0, 0]}
                     />
-                    <Bar dataKey="approved" fill="#FFD700" name="Approved" />
+                    <Bar
+                      dataKey="approved"
+                      fill="#4378A0"
+                      name="Approved"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
             {/* Sector Distribution */}
-            <Card>
+            <Card className="border-[#CAD6DE] shadow-sm">
               <CardHeader>
-                <CardTitle>Startup Sectors</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-[#005081]">
+                  Startup Sectors
+                </CardTitle>
+                <CardDescription className="text-[#7D818B]">
                   Distribution of startups by sector
                 </CardDescription>
               </CardHeader>
@@ -382,7 +396,12 @@ function AdminDashboard() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#fff",
+                        borderColor: "#CAD6DE",
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -390,26 +409,33 @@ function AdminDashboard() {
           </div>
 
           {/* Recent Ideas */}
-          <Card>
-            <CardHeader>
+          <Card className="border-[#CAD6DE] shadow-sm">
+            <CardHeader className="border-b border-[#CAD6DE]/30">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Recent Ideas</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-[#005081]">Recent Ideas</CardTitle>
+                  <CardDescription className="text-[#7D818B]">
                     Latest idea submissions requiring review
                   </CardDescription>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-[#005081] border-[#005081]/30 hover:bg-[#005081]/5"
+                >
                   View All
                   <ArrowUpRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               {loading ? (
-                <div className="text-center py-8">Loading ideas...</div>
+                <div className="flex justify-center py-8 text-[#005081]">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading
+                  ideas...
+                </div>
               ) : recentIdeas.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-[#7D818B]">
                   No pending ideas to review
                 </div>
               ) : (
@@ -417,27 +443,32 @@ function AdminDashboard() {
                   {recentIdeas.map((idea: any) => (
                     <div
                       key={idea.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
+                      className="flex items-center justify-between p-4 border border-[#CAD6DE] rounded-lg hover:border-[#005081]/30 transition-colors bg-white"
                     >
                       <div className="flex items-center space-x-4">
-                        <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
-                          <Building2 className="h-5 w-5 text-aau-blue" />
+                        <div className="h-10 w-10 bg-[#005081]/10 rounded-full flex items-center justify-center">
+                          <Building2 className="h-5 w-5 text-[#005081]" />
                         </div>
                         <div>
-                          <h4 className="font-medium">{idea.title}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            by {idea.owner_details?.username || "Unknown"} •{" "}
-                            {idea.industry || "N/A"} •{" "}
+                          <h4 className="font-semibold text-[#21282D]">
+                            {idea.title}
+                          </h4>
+                          <p className="text-sm text-[#7D818B]">
+                            by{" "}
+                            <span className="text-[#005081] font-medium">
+                              {idea.owner_details?.username || "Unknown"}
+                            </span>{" "}
+                            • {idea.industry || "N/A"} •{" "}
                             {idea.business_stage || "N/A"}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <div className="text-right">
+                        <div className="text-right hidden sm:block">
                           <Badge className={getStatusColor(idea.status)}>
                             {idea.status.replace("_", " ")}
                           </Badge>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-xs text-[#7D818B] mt-1">
                             {new Date(idea.created_at).toLocaleDateString()}
                           </p>
                         </div>
@@ -445,6 +476,7 @@ function AdminDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
+                            className="text-[#7D818B] hover:text-[#005081] border-[#CAD6DE]"
                             onClick={() => openViewDialog(idea)}
                           >
                             <Eye className="h-4 w-4" />
@@ -452,18 +484,20 @@ function AdminDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50 border-[#CAD6DE]"
                             onClick={() => openApproveDialog(idea)}
                             disabled={processingId === idea.id}
                           >
-                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <CheckCircle className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
+                            className="text-[#E63946] hover:text-red-700 hover:bg-red-50 border-[#CAD6DE]"
                             onClick={() => openRejectDialog(idea)}
                             disabled={processingId === idea.id}
                           >
-                            <XCircle className="h-4 w-4 text-red-600" />
+                            <XCircle className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -476,15 +510,17 @@ function AdminDashboard() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer border-[#CAD6DE] group">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-aau-blue/10 rounded-lg flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-aau-blue" />
+                  <div className="h-12 w-12 bg-[#005081]/10 rounded-lg flex items-center justify-center group-hover:bg-[#005081] transition-colors">
+                    <FileText className="h-6 w-6 text-[#005081] group-hover:text-white transition-colors" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Review Ideas</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-[#005081]">
+                      Review Ideas
+                    </h3>
+                    <p className="text-sm text-[#7D818B]">
                       {pendingIdeas} pending reviews
                     </p>
                   </div>
@@ -492,15 +528,17 @@ function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer border-[#CAD6DE] group">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-aau-gold/10 rounded-lg flex items-center justify-center">
-                    <Users className="h-6 w-6 text-aau-gold" />
+                  <div className="h-12 w-12 bg-[#4378A0]/10 rounded-lg flex items-center justify-center group-hover:bg-[#4378A0] transition-colors">
+                    <Users className="h-6 w-6 text-[#4378A0] group-hover:text-white transition-colors" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Manage Users</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-[#005081]">
+                      Manage Users
+                    </h3>
+                    <p className="text-sm text-[#7D818B]">
                       User roles & permissions
                     </p>
                   </div>
@@ -508,15 +546,17 @@ function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer border-[#CAD6DE] group">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Award className="h-6 w-6 text-green-600" />
+                  <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors">
+                    <Award className="h-6 w-6 text-green-600 group-hover:text-white transition-colors" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">View Analytics</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-[#005081]">
+                      View Analytics
+                    </h3>
+                    <p className="text-sm text-[#7D818B]">
                       Ideas & approval metrics
                     </p>
                   </div>
@@ -529,23 +569,26 @@ function AdminDashboard() {
 
       {/* Approval Dialog */}
       <Dialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white border-[#CAD6DE]">
           <DialogHeader>
-            <DialogTitle>Approve Idea</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-[#005081]">Approve Idea</DialogTitle>
+            <DialogDescription className="text-[#7D818B]">
               Are you sure you want to approve "{selectedIdea?.title}"? You can
               optionally add feedback.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="approve-feedback">Feedback (Optional)</Label>
+              <Label htmlFor="approve-feedback" className="text-[#21282D]">
+                Feedback (Optional)
+              </Label>
               <Textarea
                 id="approve-feedback"
                 placeholder="Add any feedback or notes for the founder..."
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
                 rows={3}
+                className="border-[#CAD6DE] focus-visible:ring-[#005081]"
               />
             </div>
           </div>
@@ -553,12 +596,14 @@ function AdminDashboard() {
             <Button
               variant="outline"
               onClick={() => setShowApproveDialog(false)}
+              className="border-[#CAD6DE] text-[#7D818B]"
             >
               Cancel
             </Button>
             <Button
               onClick={handleApprove}
               disabled={processingId === selectedIdea?.id}
+              className="bg-[#005081] hover:bg-[#015384] text-white"
             >
               {processingId === selectedIdea?.id ? "Approving..." : "Approve"}
             </Button>
@@ -568,17 +613,19 @@ function AdminDashboard() {
 
       {/* Rejection Dialog */}
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white border-[#CAD6DE]">
           <DialogHeader>
-            <DialogTitle>Reject Idea</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-[#E63946]">Reject Idea</DialogTitle>
+            <DialogDescription className="text-[#7D818B]">
               Please provide feedback explaining why "{selectedIdea?.title}" is
               being rejected.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="reject-feedback">Rejection Reason *</Label>
+              <Label htmlFor="reject-feedback" className="text-[#21282D]">
+                Rejection Reason *
+              </Label>
               <Textarea
                 id="reject-feedback"
                 placeholder="Explain the reasons for rejection and provide constructive feedback..."
@@ -586,6 +633,7 @@ function AdminDashboard() {
                 onChange={(e) => setFeedback(e.target.value)}
                 rows={4}
                 required
+                className="border-[#CAD6DE] focus-visible:ring-[#E63946]"
               />
             </div>
           </div>
@@ -593,6 +641,7 @@ function AdminDashboard() {
             <Button
               variant="outline"
               onClick={() => setShowRejectDialog(false)}
+              className="border-[#CAD6DE] text-[#7D818B]"
             >
               Cancel
             </Button>
@@ -600,6 +649,7 @@ function AdminDashboard() {
               variant="destructive"
               onClick={handleReject}
               disabled={processingId === selectedIdea?.id || !feedback.trim()}
+              className="bg-[#E63946] hover:bg-red-700"
             >
               {processingId === selectedIdea?.id ? "Rejecting..." : "Reject"}
             </Button>
@@ -609,97 +659,139 @@ function AdminDashboard() {
 
       {/* View Idea Details Dialog */}
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white border-[#CAD6DE]">
           <DialogHeader>
-            <DialogTitle>{selectedIdea?.title}</DialogTitle>
-            <DialogDescription>
-              Submitted by {selectedIdea?.owner_details?.username} on{" "}
+            <DialogTitle className="text-xl text-[#005081]">
+              {selectedIdea?.title}
+            </DialogTitle>
+            <DialogDescription className="text-[#7D818B]">
+              Submitted by{" "}
+              <span className="font-medium text-[#21282D]">
+                {selectedIdea?.owner_details?.username}
+              </span>{" "}
+              on{" "}
               {selectedIdea?.created_at
                 ? new Date(selectedIdea.created_at).toLocaleDateString()
                 : "N/A"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 p-4 bg-[#CAD6DE]/10 rounded-lg">
               <div>
-                <Label className="text-sm font-medium">Industry</Label>
-                <p className="text-sm">{selectedIdea?.industry || "N/A"}</p>
+                <Label className="text-xs uppercase text-[#7D818B] font-bold">
+                  Industry
+                </Label>
+                <p className="text-sm font-medium text-[#21282D]">
+                  {selectedIdea?.industry || "N/A"}
+                </p>
               </div>
               <div>
-                <Label className="text-sm font-medium">Business Stage</Label>
-                <p className="text-sm">
+                <Label className="text-xs uppercase text-[#7D818B] font-bold">
+                  Business Stage
+                </Label>
+                <p className="text-sm font-medium text-[#21282D]">
                   {selectedIdea?.business_stage || "N/A"}
                 </p>
               </div>
               <div>
-                <Label className="text-sm font-medium">Team Size</Label>
-                <p className="text-sm">{selectedIdea?.team_size || "N/A"}</p>
+                <Label className="text-xs uppercase text-[#7D818B] font-bold">
+                  Team Size
+                </Label>
+                <p className="text-sm font-medium text-[#21282D]">
+                  {selectedIdea?.team_size || "N/A"}
+                </p>
               </div>
               <div>
-                <Label className="text-sm font-medium">Status</Label>
-                <Badge className={getStatusColor(selectedIdea?.status)}>
-                  {selectedIdea?.status?.replace("_", " ") || "N/A"}
-                </Badge>
+                <Label className="text-xs uppercase text-[#7D818B] font-bold">
+                  Status
+                </Label>
+                <div className="mt-1">
+                  <Badge className={getStatusColor(selectedIdea?.status)}>
+                    {selectedIdea?.status?.replace("_", " ") || "N/A"}
+                  </Badge>
+                </div>
               </div>
             </div>
 
-            <div>
-              <Label className="text-sm font-medium">Description</Label>
-              <p className="text-sm mt-1">
-                {selectedIdea?.description || "N/A"}
-              </p>
-            </div>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-bold text-[#005081]">
+                  Description
+                </Label>
+                <p className="text-sm mt-1 text-[#21282D] leading-relaxed">
+                  {selectedIdea?.description || "N/A"}
+                </p>
+              </div>
 
-            <div>
-              <Label className="text-sm font-medium">Problem Statement</Label>
-              <p className="text-sm mt-1">
-                {selectedIdea?.problem_statement || "N/A"}
-              </p>
-            </div>
+              <div>
+                <Label className="text-sm font-bold text-[#005081]">
+                  Problem Statement
+                </Label>
+                <p className="text-sm mt-1 text-[#21282D] leading-relaxed">
+                  {selectedIdea?.problem_statement || "N/A"}
+                </p>
+              </div>
 
-            <div>
-              <Label className="text-sm font-medium">Solution</Label>
-              <p className="text-sm mt-1">{selectedIdea?.solution || "N/A"}</p>
-            </div>
+              <div>
+                <Label className="text-sm font-bold text-[#005081]">
+                  Solution
+                </Label>
+                <p className="text-sm mt-1 text-[#21282D] leading-relaxed">
+                  {selectedIdea?.solution || "N/A"}
+                </p>
+              </div>
 
-            <div>
-              <Label className="text-sm font-medium">Target Audience</Label>
-              <p className="text-sm mt-1">
-                {selectedIdea?.target_audience || "N/A"}
-              </p>
-            </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <Label className="text-sm font-bold text-[#005081]">
+                    Target Audience
+                  </Label>
+                  <p className="text-sm mt-1 text-[#21282D]">
+                    {selectedIdea?.target_audience || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-bold text-[#005081]">
+                    Technologies Used
+                  </Label>
+                  <p className="text-sm mt-1 text-[#21282D]">
+                    {selectedIdea?.technologies_used || "N/A"}
+                  </p>
+                </div>
+              </div>
 
-            <div>
-              <Label className="text-sm font-medium">Technologies Used</Label>
-              <p className="text-sm mt-1">
-                {selectedIdea?.technologies_used || "N/A"}
-              </p>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium">Revenue Model</Label>
-              <p className="text-sm mt-1">
-                {selectedIdea?.revenue_model || "N/A"}
-              </p>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium">
-                Funding Requirements
-              </Label>
-              <p className="text-sm mt-1">
-                {selectedIdea?.funding_requirements || "N/A"}
-              </p>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <Label className="text-sm font-bold text-[#005081]">
+                    Revenue Model
+                  </Label>
+                  <p className="text-sm mt-1 text-[#21282D]">
+                    {selectedIdea?.revenue_model || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-bold text-[#005081]">
+                    Funding Requirements
+                  </Label>
+                  <p className="text-sm mt-1 text-[#21282D]">
+                    {selectedIdea?.funding_requirements || "N/A"}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+          <DialogFooter className="mt-6 border-t border-[#CAD6DE] pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowViewDialog(false)}
+              className="border-[#CAD6DE] text-[#7D818B]"
+            >
               Close
             </Button>
             {selectedIdea?.status === "pending" && (
               <>
                 <Button
-                  variant="outline"
+                  className="bg-[#005081] hover:bg-[#015384] text-white"
                   onClick={() => {
                     setShowViewDialog(false);
                     openApproveDialog(selectedIdea);
@@ -710,6 +802,7 @@ function AdminDashboard() {
                 </Button>
                 <Button
                   variant="destructive"
+                  className="bg-[#E63946] hover:bg-red-700"
                   onClick={() => {
                     setShowViewDialog(false);
                     openRejectDialog(selectedIdea);

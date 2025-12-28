@@ -1,8 +1,14 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   ExternalLink,
@@ -19,9 +25,9 @@ import {
   Globe,
   Linkedin,
   ChevronRight,
-} from "lucide-react"
-import Link from "next/link"
-import { notFound } from "next/navigation"
+} from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 // This would typically come from a database or API
 async function getStartup(id: string) {
@@ -85,27 +91,68 @@ async function getStartup(id: string) {
         bio: "20+ years in African fintech, former World Bank advisor",
       },
       investors: [
-        { name: "African Development Bank", type: "Institution", amount: "$1.5M" },
+        {
+          name: "African Development Bank",
+          type: "Institution",
+          amount: "$1.5M",
+        },
         { name: "Catalyst Fund", type: "VC", amount: "$800K" },
-        { name: "Ethiopian Investment Holdings", type: "Local", amount: "$200K" },
+        {
+          name: "Ethiopian Investment Holdings",
+          type: "Local",
+          amount: "$200K",
+        },
       ],
       milestones: [
         { date: "2024-11", title: "Reached 50K users", status: "completed" },
-        { date: "2024-09", title: "Series A funding closed", status: "completed" },
-        { date: "2024-06", title: "Partnership with Commercial Bank of Ethiopia", status: "completed" },
-        { date: "2024-03", title: "Launched in 5 rural regions", status: "completed" },
-        { date: "2025-02", title: "Launch merchant payment system", status: "upcoming" },
-        { date: "2025-06", title: "Expand to Kenya and Uganda", status: "upcoming" },
+        {
+          date: "2024-09",
+          title: "Series A funding closed",
+          status: "completed",
+        },
+        {
+          date: "2024-06",
+          title: "Partnership with Commercial Bank of Ethiopia",
+          status: "completed",
+        },
+        {
+          date: "2024-03",
+          title: "Launched in 5 rural regions",
+          status: "completed",
+        },
+        {
+          date: "2025-02",
+          title: "Launch merchant payment system",
+          status: "upcoming",
+        },
+        {
+          date: "2025-06",
+          title: "Expand to Kenya and Uganda",
+          status: "upcoming",
+        },
       ],
-      tags: ["Mobile Payments", "Financial Inclusion", "Rural Banking", "B2C", "USSD", "SMS Banking"],
+      tags: [
+        "Mobile Payments",
+        "Financial Inclusion",
+        "Rural Banking",
+        "B2C",
+        "USSD",
+        "SMS Banking",
+      ],
       socialLinks: {
         twitter: "https://twitter.com/ethiopay",
         linkedin: "https://linkedin.com/company/ethiopay",
         facebook: "https://facebook.com/ethiopay",
       },
       awards: [
-        { name: "Best Fintech Startup 2024", organization: "African Fintech Awards" },
-        { name: "Innovation in Financial Inclusion", organization: "World Bank Group" },
+        {
+          name: "Best Fintech Startup 2024",
+          organization: "African Fintech Awards",
+        },
+        {
+          name: "Innovation in Financial Inclusion",
+          organization: "World Bank Group",
+        },
       ],
       press: [
         {
@@ -113,51 +160,66 @@ async function getStartup(id: string) {
           publication: "TechCrunch",
           date: "2024-09-15",
         },
-        { title: "How Ethiopian Startup is Banking the Unbanked", publication: "Forbes Africa", date: "2024-08-20" },
+        {
+          title: "How Ethiopian Startup is Banking the Unbanked",
+          publication: "Forbes Africa",
+          date: "2024-08-20",
+        },
       ],
       featured: true,
       lastUpdated: "2024-12-01",
     },
-  ]
+  ];
 
-  return startups.find((s) => s.id === Number.parseInt(id))
+  return startups.find((s) => s.id === Number.parseInt(id));
 }
 
-export default async function StartupProfilePage({ params }: { params: { id: string } }) {
-  const startup = await getStartup(params.id)
+export default async function StartupProfilePage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const startup = await getStartup(params.id);
 
   if (!startup) {
-    notFound()
+    notFound();
   }
 
+  // Updated Stage Colors to use standard Tailwind classes
   const getStageColor = (stage: string) => {
     const colors = {
-      Ideation: "bg-gray-100 text-gray-800",
-      MVP: "bg-blue-100 text-blue-800",
+      Ideation: "bg-slate-100 text-slate-800",
+      MVP: "bg-blue-100 text-primary",
       "Early Traction": "bg-green-100 text-green-800",
       Seed: "bg-yellow-100 text-yellow-800",
       "Series A": "bg-orange-100 text-orange-800",
       "Series B": "bg-red-100 text-red-800",
       Growth: "bg-purple-100 text-purple-800",
-    }
-    return colors[stage as keyof typeof colors] || "bg-gray-100 text-gray-800"
-  }
+    };
+    return (
+      colors[stage as keyof typeof colors] || "bg-slate-100 text-slate-800"
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
       <section className="relative">
-        <div className="aspect-[3/1] relative">
+        <div className="aspect-[3/1] relative bg-slate-900">
           <img
             src={startup.coverImage || "/placeholder.svg"}
             alt={startup.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover opacity-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent" />
 
           {/* Back Button */}
-          <div className="absolute top-6 left-6">
-            <Button variant="secondary" asChild className="bg-white/90">
+          <div className="absolute top-6 left-6 z-20">
+            <Button
+              variant="secondary"
+              asChild
+              className="bg-white/95 hover:bg-white text-primary border-none shadow-sm font-semibold"
+            >
               <Link href="/startups">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Directory
@@ -166,53 +228,82 @@ export default async function StartupProfilePage({ params }: { params: { id: str
           </div>
 
           {/* Action Buttons */}
-          <div className="absolute top-6 right-6 flex gap-2">
-            <Button size="sm" variant="secondary" className="bg-white/90">
+          <div className="absolute top-6 right-6 flex gap-2 z-20">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="bg-white/90 hover:bg-white text-primary border-none"
+            >
               <Heart className="h-4 w-4" />
             </Button>
-            <Button size="sm" variant="secondary" className="bg-white/90">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="bg-white/90 hover:bg-white text-primary border-none"
+            >
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
 
           {/* Startup Info Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+          <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-10">
             <div className="container mx-auto max-w-7xl">
-              <div className="flex items-end justify-between">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="flex items-end space-x-6">
-                  <Avatar className="h-20 w-20 border-4 border-white">
-                    <AvatarImage src={startup.logo || "/placeholder.svg"} alt={startup.name} />
-                    <AvatarFallback className="bg-aau-blue text-white text-xl">
+                  <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-white shadow-xl">
+                    <AvatarImage
+                      src={startup.logo || "/placeholder.svg"}
+                      alt={startup.name}
+                    />
+                    <AvatarFallback className="bg-primary text-white text-xl font-bold">
                       {startup.name.substring(0, 2)}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <h1 className="text-4xl font-bold mb-2">{startup.name}</h1>
-                    <p className="text-xl opacity-90 mb-3">{startup.tagline}</p>
-                    <div className="flex items-center space-x-4">
-                      <Badge className={`${getStageColor(startup.stage)} border-white`}>{startup.stage}</Badge>
-                      <Badge variant="outline" className="border-white text-white">
+                  <div className="mb-1">
+                    <h1 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight">
+                      {startup.name}
+                    </h1>
+                    <p className="text-lg md:text-xl text-blue-100 mb-4 max-w-2xl">
+                      {startup.tagline}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Badge
+                        className={`${getStageColor(
+                          startup.stage
+                        )} border-none shadow-sm px-3 py-1`}
+                      >
+                        {startup.stage}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-white/40 text-white bg-white/10 backdrop-blur-sm px-3 py-1"
+                      >
                         {startup.sector}
                       </Badge>
-                      <div className="flex items-center text-sm opacity-75">
-                        <MapPin className="h-4 w-4 mr-1" />
+                      <div className="flex items-center text-sm text-blue-100 bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                        <MapPin className="h-3.5 w-3.5 mr-1.5" />
                         {startup.location}
                       </div>
-                      <div className="flex items-center text-sm opacity-75">
-                        <Calendar className="h-4 w-4 mr-1" />
+                      <div className="flex items-center text-sm text-blue-100 bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                        <Calendar className="h-3.5 w-3.5 mr-1.5" />
                         Founded {startup.founded}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-3">
-                  <Button variant="secondary" asChild>
+
+                <div className="flex gap-3 mb-1">
+                  <Button
+                    variant="outline"
+                    className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-md"
+                    asChild
+                  >
                     <Link href={startup.website} target="_blank">
                       <Globe className="h-4 w-4 mr-2" />
                       Visit Website
                     </Link>
                   </Button>
-                  <Button className="bg-aau-blue hover:bg-aau-blue/90">
+                  <Button className="bg-white text-primary hover:bg-blue-50 font-bold shadow-lg border-none">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Contact Team
                   </Button>
@@ -230,62 +321,101 @@ export default async function StartupProfilePage({ params }: { params: { id: str
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
               <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="metrics">Metrics</TabsTrigger>
-                  <TabsTrigger value="team">Team</TabsTrigger>
-                  <TabsTrigger value="milestones">Milestones</TabsTrigger>
-                  <TabsTrigger value="updates">Updates</TabsTrigger>
+                <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent space-x-6 overflow-x-auto">
+                  <TabsTrigger
+                    value="overview"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary pb-3 px-1 text-slate-500 hover:text-primary transition-all"
+                  >
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="metrics"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary pb-3 px-1 text-slate-500 hover:text-primary transition-all"
+                  >
+                    Metrics
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="team"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary pb-3 px-1 text-slate-500 hover:text-primary transition-all"
+                  >
+                    Team
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="milestones"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary pb-3 px-1 text-slate-500 hover:text-primary transition-all"
+                  >
+                    Milestones
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="updates"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary pb-3 px-1 text-slate-500 hover:text-primary transition-all"
+                  >
+                    Updates
+                  </TabsTrigger>
                 </TabsList>
 
                 {/* Overview Tab */}
-                <TabsContent value="overview" className="space-y-6">
-                  <Card>
+                <TabsContent
+                  value="overview"
+                  className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300"
+                >
+                  <Card className="border-slate-200 shadow-sm">
                     <CardHeader>
-                      <CardTitle>About {startup.name}</CardTitle>
+                      <CardTitle className="text-xl text-primary">
+                        About {startup.name}
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-muted-foreground leading-relaxed">{startup.fullDescription}</p>
+                    <CardContent className="space-y-6">
+                      <p className="text-slate-600 leading-relaxed text-lg">
+                        {startup.fullDescription}
+                      </p>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                         <div>
-                          <h4 className="font-semibold mb-3">Key Features</h4>
-                          <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li className="flex items-center">
-                              <ChevronRight className="h-4 w-4 mr-2 text-aau-blue" />
+                          <h4 className="font-semibold mb-4 text-slate-800 flex items-center">
+                            <ChevronRight className="w-4 h-4 mr-2 text-primary" />{" "}
+                            Key Features
+                          </h4>
+                          <ul className="space-y-3 text-sm text-slate-600">
+                            <li className="flex items-start">
+                              <ChevronRight className="h-4 w-4 mr-2 text-primary shrink-0 mt-0.5" />
                               USSD-based transactions for feature phones
                             </li>
-                            <li className="flex items-center">
-                              <ChevronRight className="h-4 w-4 mr-2 text-aau-blue" />
+                            <li className="flex items-start">
+                              <ChevronRight className="h-4 w-4 mr-2 text-primary shrink-0 mt-0.5" />
                               SMS notifications and confirmations
                             </li>
-                            <li className="flex items-center">
-                              <ChevronRight className="h-4 w-4 mr-2 text-aau-blue" />
+                            <li className="flex items-start">
+                              <ChevronRight className="h-4 w-4 mr-2 text-primary shrink-0 mt-0.5" />
                               Multi-language support (Amharic, Oromo, Tigrinya)
                             </li>
-                            <li className="flex items-center">
-                              <ChevronRight className="h-4 w-4 mr-2 text-aau-blue" />
+                            <li className="flex items-start">
+                              <ChevronRight className="h-4 w-4 mr-2 text-primary shrink-0 mt-0.5" />
                               Integration with local banks and MFIs
                             </li>
                           </ul>
                         </div>
                         <div>
-                          <h4 className="font-semibold mb-3">Market Impact</h4>
-                          <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li className="flex items-center">
-                              <ChevronRight className="h-4 w-4 mr-2 text-aau-blue" />
+                          <h4 className="font-semibold mb-4 text-slate-800 flex items-center">
+                            <TrendingUp className="w-4 h-4 mr-2 text-primary" />{" "}
+                            Market Impact
+                          </h4>
+                          <ul className="space-y-3 text-sm text-slate-600">
+                            <li className="flex items-start">
+                              <ChevronRight className="h-4 w-4 mr-2 text-primary shrink-0 mt-0.5" />
                               Serving 5 rural regions across Ethiopia
                             </li>
-                            <li className="flex items-center">
-                              <ChevronRight className="h-4 w-4 mr-2 text-aau-blue" />
+                            <li className="flex items-start">
+                              <ChevronRight className="h-4 w-4 mr-2 text-primary shrink-0 mt-0.5" />
                               85% of users previously unbanked
                             </li>
-                            <li className="flex items-center">
-                              <ChevronRight className="h-4 w-4 mr-2 text-aau-blue" />
-                              Average transaction cost 60% lower than alternatives
+                            <li className="flex items-start">
+                              <ChevronRight className="h-4 w-4 mr-2 text-primary shrink-0 mt-0.5" />
+                              Average transaction cost 60% lower than
+                              alternatives
                             </li>
-                            <li className="flex items-center">
-                              <ChevronRight className="h-4 w-4 mr-2 text-aau-blue" />
+                            <li className="flex items-start">
+                              <ChevronRight className="h-4 w-4 mr-2 text-primary shrink-0 mt-0.5" />
                               Supporting 200+ local merchants
                             </li>
                           </ul>
@@ -294,20 +424,29 @@ export default async function StartupProfilePage({ params }: { params: { id: str
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="border-slate-200 shadow-sm">
                     <CardHeader>
-                      <CardTitle>Awards & Recognition</CardTitle>
+                      <CardTitle className="text-xl text-primary">
+                        Awards & Recognition
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         {startup.awards.map((award, index) => (
-                          <div key={index} className="flex items-center space-x-3">
-                            <div className="h-10 w-10 bg-aau-gold/10 rounded-full flex items-center justify-center">
-                              <Award className="h-5 w-5 text-aau-gold" />
+                          <div
+                            key={index}
+                            className="flex items-center space-x-4 p-4 bg-slate-50 rounded-lg border border-slate-100"
+                          >
+                            <div className="h-10 w-10 bg-yellow-100 rounded-full flex items-center justify-center shrink-0">
+                              <Award className="h-5 w-5 text-yellow-700" />
                             </div>
                             <div>
-                              <h4 className="font-medium">{award.name}</h4>
-                              <p className="text-sm text-muted-foreground">{award.organization}</p>
+                              <h4 className="font-semibold text-slate-800">
+                                {award.name}
+                              </h4>
+                              <p className="text-sm text-slate-500">
+                                {award.organization}
+                              </p>
                             </div>
                           </div>
                         ))}
@@ -319,88 +458,127 @@ export default async function StartupProfilePage({ params }: { params: { id: str
                 {/* Metrics Tab */}
                 <TabsContent value="metrics" className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
+                    <Card className="border-slate-200 shadow-sm">
                       <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <DollarSign className="h-5 w-5 mr-2 text-aau-blue" />
+                        <CardTitle className="flex items-center text-primary">
+                          <DollarSign className="h-5 w-5 mr-2" />
                           Financial Metrics
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <div className="text-2xl font-bold text-aau-blue">{startup.metrics.revenue}</div>
-                            <div className="text-sm text-muted-foreground">Annual Revenue</div>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="p-3 bg-slate-50 rounded-lg">
+                            <div className="text-2xl font-bold text-primary">
+                              {startup.metrics.revenue}
+                            </div>
+                            <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium mt-1">
+                              Annual Revenue
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-2xl font-bold text-aau-blue">{startup.metrics.funding}</div>
-                            <div className="text-sm text-muted-foreground">Total Funding</div>
+                          <div className="p-3 bg-slate-50 rounded-lg">
+                            <div className="text-2xl font-bold text-primary">
+                              {startup.metrics.funding}
+                            </div>
+                            <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium mt-1">
+                              Total Funding
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-2xl font-bold text-aau-blue">
+                          <div className="p-3 bg-slate-50 rounded-lg">
+                            <div className="text-2xl font-bold text-primary">
                               {startup.metrics.monthlyTransactions}
                             </div>
-                            <div className="text-sm text-muted-foreground">Monthly Transactions</div>
+                            <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium mt-1">
+                              Monthly Transactions
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-2xl font-bold text-aau-blue">
+                          <div className="p-3 bg-slate-50 rounded-lg">
+                            <div className="text-2xl font-bold text-primary">
                               {startup.metrics.averageTransactionValue}
                             </div>
-                            <div className="text-sm text-muted-foreground">Avg Transaction</div>
+                            <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium mt-1">
+                              Avg Transaction
+                            </div>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="border-slate-200 shadow-sm">
                       <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <TrendingUp className="h-5 w-5 mr-2 text-green-600" />
+                        <CardTitle className="flex items-center text-green-700">
+                          <TrendingUp className="h-5 w-5 mr-2" />
                           Growth Metrics
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <div className="text-2xl font-bold text-green-600">{startup.metrics.growth}</div>
-                            <div className="text-sm text-muted-foreground">YoY Growth</div>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="p-3 bg-green-50 rounded-lg">
+                            <div className="text-2xl font-bold text-green-700">
+                              {startup.metrics.growth}
+                            </div>
+                            <div className="text-xs text-green-800/70 uppercase tracking-wide font-medium mt-1">
+                              YoY Growth
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-2xl font-bold text-green-600">{startup.metrics.users}</div>
-                            <div className="text-sm text-muted-foreground">Active Users</div>
+                          <div className="p-3 bg-green-50 rounded-lg">
+                            <div className="text-2xl font-bold text-green-700">
+                              {startup.metrics.users}
+                            </div>
+                            <div className="text-xs text-green-800/70 uppercase tracking-wide font-medium mt-1">
+                              Active Users
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-2xl font-bold text-green-600">{startup.metrics.customerRetention}</div>
-                            <div className="text-sm text-muted-foreground">Retention Rate</div>
+                          <div className="p-3 bg-green-50 rounded-lg">
+                            <div className="text-2xl font-bold text-green-700">
+                              {startup.metrics.customerRetention}
+                            </div>
+                            <div className="text-xs text-green-800/70 uppercase tracking-wide font-medium mt-1">
+                              Retention Rate
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-2xl font-bold text-green-600">{startup.metrics.marketShare}</div>
-                            <div className="text-sm text-muted-foreground">Market Share</div>
+                          <div className="p-3 bg-green-50 rounded-lg">
+                            <div className="text-2xl font-bold text-green-700">
+                              {startup.metrics.marketShare}
+                            </div>
+                            <div className="text-xs text-green-800/70 uppercase tracking-wide font-medium mt-1">
+                              Market Share
+                            </div>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
 
-                  <Card>
+                  <Card className="border-slate-200 shadow-sm">
                     <CardHeader>
-                      <CardTitle>Funding History</CardTitle>
+                      <CardTitle className="text-primary">
+                        Funding History
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         {startup.investors.map((investor, index) => (
-                          <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div className="flex items-center space-x-3">
-                              <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
-                                <Building className="h-5 w-5 text-aau-blue" />
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-primary/20 transition-colors"
+                          >
+                            <div className="flex items-center space-x-4">
+                              <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+                                <Building className="h-5 w-5 text-primary" />
                               </div>
                               <div>
-                                <h4 className="font-medium">{investor.name}</h4>
-                                <p className="text-sm text-muted-foreground">{investor.type}</p>
+                                <h4 className="font-semibold text-slate-800">
+                                  {investor.name}
+                                </h4>
+                                <p className="text-sm text-slate-500">
+                                  {investor.type}
+                                </p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="font-semibold">{investor.amount}</div>
+                              <div className="font-bold text-primary">
+                                {investor.amount}
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -411,21 +589,28 @@ export default async function StartupProfilePage({ params }: { params: { id: str
 
                 {/* Team Tab */}
                 <TabsContent value="team" className="space-y-6">
-                  <Card>
+                  <Card className="border-slate-200 shadow-sm">
                     <CardHeader>
-                      <CardTitle>Leadership Team</CardTitle>
-                      <CardDescription>Meet the founders and key team members</CardDescription>
+                      <CardTitle className="text-primary">
+                        Leadership Team
+                      </CardTitle>
+                      <CardDescription>
+                        Meet the founders and key team members
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* Founder */}
-                      <div className="p-6 border rounded-lg">
-                        <div className="flex items-start space-x-4">
-                          <Avatar className="h-16 w-16">
+                      <div className="p-6 border border-slate-200 rounded-xl bg-slate-50/50">
+                        <div className="flex items-start space-x-5">
+                          <Avatar className="h-20 w-20 border-2 border-white shadow-sm">
                             <AvatarImage
-                              src={startup.team.founder.avatar || "/placeholder.svg"}
+                              src={
+                                startup.team.founder.avatar ||
+                                "/placeholder.svg"
+                              }
                               alt={startup.team.founder.name}
                             />
-                            <AvatarFallback className="bg-aau-blue text-white">
+                            <AvatarFallback className="bg-primary text-white text-lg font-bold">
                               {startup.team.founder.name
                                 .split(" ")
                                 .map((n) => n[0])
@@ -435,16 +620,30 @@ export default async function StartupProfilePage({ params }: { params: { id: str
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
                               <div>
-                                <h3 className="text-lg font-semibold">{startup.team.founder.name}</h3>
-                                <p className="text-muted-foreground">{startup.team.founder.role}</p>
+                                <h3 className="text-xl font-bold text-slate-900">
+                                  {startup.team.founder.name}
+                                </h3>
+                                <p className="text-primary font-medium">
+                                  {startup.team.founder.role}
+                                </p>
                               </div>
-                              <Button variant="outline" size="sm" asChild>
-                                <Link href={startup.team.founder.linkedin || "#"} target="_blank">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                className="hover:text-primary hover:border-primary/50"
+                              >
+                                <Link
+                                  href={startup.team.founder.linkedin || "#"}
+                                  target="_blank"
+                                >
                                   <Linkedin className="h-4 w-4" />
                                 </Link>
                               </Button>
                             </div>
-                            <p className="text-sm text-muted-foreground">{startup.team.founder.bio}</p>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              {startup.team.founder.bio}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -452,11 +651,17 @@ export default async function StartupProfilePage({ params }: { params: { id: str
                       {/* Co-founders */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {startup.team.coFounders.map((coFounder, index) => (
-                          <div key={index} className="p-4 border rounded-lg">
-                            <div className="flex items-start space-x-3">
-                              <Avatar className="h-12 w-12">
-                                <AvatarImage src={coFounder.avatar || "/placeholder.svg"} alt={coFounder.name} />
-                                <AvatarFallback className="bg-aau-blue text-white">
+                          <div
+                            key={index}
+                            className="p-5 border border-slate-100 rounded-xl hover:border-slate-300 transition-colors"
+                          >
+                            <div className="flex items-start space-x-4">
+                              <Avatar className="h-14 w-14 border border-slate-100">
+                                <AvatarImage
+                                  src={coFounder.avatar || "/placeholder.svg"}
+                                  alt={coFounder.name}
+                                />
+                                <AvatarFallback className="bg-primary text-white">
                                   {coFounder.name
                                     .split(" ")
                                     .map((n) => n[0])
@@ -464,24 +669,38 @@ export default async function StartupProfilePage({ params }: { params: { id: str
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1">
-                                <h4 className="font-medium">{coFounder.name}</h4>
-                                <p className="text-sm text-muted-foreground mb-2">{coFounder.role}</p>
-                                <p className="text-xs text-muted-foreground">{coFounder.bio}</p>
+                                <h4 className="font-semibold text-slate-900">
+                                  {coFounder.name}
+                                </h4>
+                                <p className="text-sm text-primary mb-2 font-medium">
+                                  {coFounder.role}
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  {coFounder.bio}
+                                </p>
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
 
-                      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="flex items-center justify-between p-5 bg-blue-50/50 border border-blue-100 rounded-xl">
                         <div className="flex items-center space-x-3">
-                          <Users className="h-5 w-5 text-aau-blue" />
+                          <div className="p-2 bg-primary/10 rounded-full">
+                            <Users className="h-5 w-5 text-primary" />
+                          </div>
                           <div>
-                            <h4 className="font-medium">Team Size</h4>
-                            <p className="text-sm text-muted-foreground">Total employees across all departments</p>
+                            <h4 className="font-semibold text-slate-900">
+                              Team Size
+                            </h4>
+                            <p className="text-sm text-slate-500">
+                              Total employees across all departments
+                            </p>
                           </div>
                         </div>
-                        <div className="text-2xl font-bold text-aau-blue">{startup.team.size}</div>
+                        <div className="text-3xl font-bold text-primary">
+                          {startup.team.size}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -489,28 +708,54 @@ export default async function StartupProfilePage({ params }: { params: { id: str
 
                 {/* Milestones Tab */}
                 <TabsContent value="milestones" className="space-y-6">
-                  <Card>
+                  <Card className="border-slate-200 shadow-sm">
                     <CardHeader>
-                      <CardTitle>Company Milestones</CardTitle>
-                      <CardDescription>Key achievements and upcoming goals</CardDescription>
+                      <CardTitle className="text-primary">
+                        Company Milestones
+                      </CardTitle>
+                      <CardDescription>
+                        Key achievements and upcoming goals
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
+                      <div className="space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
                         {startup.milestones.map((milestone, index) => (
-                          <div key={index} className="flex items-start space-x-4">
+                          <div
+                            key={index}
+                            className="flex items-start space-x-4 relative"
+                          >
                             <div
-                              className={`h-3 w-3 rounded-full mt-2 ${
-                                milestone.status === "completed" ? "bg-green-500" : "bg-aau-blue"
+                              className={`h-4 w-4 rounded-full mt-1.5 shrink-0 z-10 border-2 border-white shadow-sm ${
+                                milestone.status === "completed"
+                                  ? "bg-green-500"
+                                  : "bg-primary"
                               }`}
                             />
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium">{milestone.title}</h4>
-                                <Badge variant={milestone.status === "completed" ? "default" : "secondary"}>
-                                  {milestone.status === "completed" ? "Completed" : "Upcoming"}
+                            <div className="flex-1 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
+                                <h4 className="font-semibold text-slate-900">
+                                  {milestone.title}
+                                </h4>
+                                <Badge
+                                  variant={
+                                    milestone.status === "completed"
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                  className={
+                                    milestone.status === "completed"
+                                      ? "bg-green-100 text-green-800 hover:bg-green-200"
+                                      : "bg-blue-100 text-primary hover:bg-blue-200"
+                                  }
+                                >
+                                  {milestone.status === "completed"
+                                    ? "Completed"
+                                    : "Upcoming"}
                                 </Badge>
                               </div>
-                              <p className="text-sm text-muted-foreground">{milestone.date}</p>
+                              <p className="text-sm text-slate-500 font-medium">
+                                {milestone.date}
+                              </p>
                             </div>
                           </div>
                         ))}
@@ -521,23 +766,40 @@ export default async function StartupProfilePage({ params }: { params: { id: str
 
                 {/* Updates Tab */}
                 <TabsContent value="updates" className="space-y-6">
-                  <Card>
+                  <Card className="border-slate-200 shadow-sm">
                     <CardHeader>
-                      <CardTitle>Recent Press & Updates</CardTitle>
+                      <CardTitle className="text-primary">
+                        Recent Press & Updates
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         {startup.press.map((article, index) => (
-                          <div key={index} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                          <div
+                            key={index}
+                            className="p-4 border border-slate-100 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all group"
+                          >
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <h4 className="font-medium mb-1">{article.title}</h4>
-                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                                  <span>{article.publication}</span>
-                                  <span>{new Date(article.date).toLocaleDateString()}</span>
+                                <h4 className="font-semibold text-slate-900 mb-1 group-hover:text-primary transition-colors">
+                                  {article.title}
+                                </h4>
+                                <div className="flex items-center space-x-4 text-sm text-slate-500">
+                                  <span className="font-medium text-slate-700">
+                                    {article.publication}
+                                  </span>
+                                  <span>
+                                    {new Date(
+                                      article.date
+                                    ).toLocaleDateString()}
+                                  </span>
                                 </div>
                               </div>
-                              <Button variant="ghost" size="sm">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-slate-400 group-hover:text-primary"
+                              >
                                 <ExternalLink className="h-4 w-4" />
                               </Button>
                             </div>
@@ -553,36 +815,64 @@ export default async function StartupProfilePage({ params }: { params: { id: str
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Contact Information */}
-              <Card>
+              <Card className="border-slate-200 shadow-sm">
                 <CardHeader>
-                  <CardTitle>Contact Information</CardTitle>
+                  <CardTitle className="text-primary text-lg">
+                    Contact Information
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <Link href={startup.website} target="_blank" className="text-sm hover:underline">
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3 text-slate-600">
+                      <Globe className="h-4 w-4 text-primary" />
+                      <Link
+                        href={startup.website}
+                        target="_blank"
+                        className="text-sm hover:text-primary hover:underline transition-colors"
+                      >
                         {startup.website}
                       </Link>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex items-center space-x-3 text-slate-600">
+                      <MapPin className="h-4 w-4 text-primary" />
                       <span className="text-sm">{startup.location}</span>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t">
+                  <div className="pt-4 border-t border-slate-100">
                     <div className="flex space-x-2">
                       {startup.socialLinks.twitter && (
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={startup.socialLinks.twitter} target="_blank">
-                            <ExternalLink className="h-4 w-4" />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          asChild
+                          className="hover:text-primary hover:border-primary/50"
+                        >
+                          <Link
+                            href={startup.socialLinks.twitter}
+                            target="_blank"
+                          >
+                            <span className="sr-only">Twitter</span>
+                            <svg
+                              className="h-4 w-4 fill-current"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                            </svg>
                           </Link>
                         </Button>
                       )}
                       {startup.socialLinks.linkedin && (
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={startup.socialLinks.linkedin} target="_blank">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          asChild
+                          className="hover:text-primary hover:border-primary/50"
+                        >
+                          <Link
+                            href={startup.socialLinks.linkedin}
+                            target="_blank"
+                          >
                             <Linkedin className="h-4 w-4" />
                           </Link>
                         </Button>
@@ -594,15 +884,20 @@ export default async function StartupProfilePage({ params }: { params: { id: str
 
               {/* Assigned Mentor */}
               {startup.mentor.assigned && (
-                <Card>
+                <Card className="border-slate-200 shadow-sm">
                   <CardHeader>
-                    <CardTitle>Assigned Mentor</CardTitle>
+                    <CardTitle className="text-primary text-lg">
+                      Assigned Mentor
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-start space-x-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={startup.mentor.avatar || "/placeholder.svg"} alt={startup.mentor.name} />
-                        <AvatarFallback className="bg-aau-blue text-white">
+                    <div className="flex items-start space-x-4">
+                      <Avatar className="h-12 w-12 border border-slate-100">
+                        <AvatarImage
+                          src={startup.mentor.avatar || "/placeholder.svg"}
+                          alt={startup.mentor.name}
+                        />
+                        <AvatarFallback className="bg-primary text-white">
                           {startup.mentor.name
                             .split(" ")
                             .map((n) => n[0])
@@ -610,9 +905,15 @@ export default async function StartupProfilePage({ params }: { params: { id: str
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h4 className="font-medium">{startup.mentor.name}</h4>
-                        <p className="text-sm text-muted-foreground mb-2">{startup.mentor.role}</p>
-                        <p className="text-xs text-muted-foreground">{startup.mentor.bio}</p>
+                        <h4 className="font-semibold text-slate-900">
+                          {startup.mentor.name}
+                        </h4>
+                        <p className="text-sm text-primary font-medium mb-1">
+                          {startup.mentor.role}
+                        </p>
+                        <p className="text-xs text-slate-500 leading-tight">
+                          {startup.mentor.bio}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -620,14 +921,20 @@ export default async function StartupProfilePage({ params }: { params: { id: str
               )}
 
               {/* Tags */}
-              <Card>
+              <Card className="border-slate-200 shadow-sm">
                 <CardHeader>
-                  <CardTitle>Technologies & Keywords</CardTitle>
+                  <CardTitle className="text-primary text-lg">
+                    Technologies & Keywords
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {startup.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="text-xs font-normal bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      >
                         {tag}
                       </Badge>
                     ))}
@@ -636,22 +943,30 @@ export default async function StartupProfilePage({ params }: { params: { id: str
               </Card>
 
               {/* Quick Stats */}
-              <Card>
+              <Card className="border-slate-200 shadow-sm bg-slate-50/50">
                 <CardHeader>
-                  <CardTitle>Quick Stats</CardTitle>
+                  <CardTitle className="text-primary text-lg">
+                    Quick Stats
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Founded</span>
-                    <span className="text-sm font-medium">{startup.founded}</span>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                    <span className="text-sm text-slate-500">Founded</span>
+                    <span className="text-sm font-semibold text-slate-900">
+                      {startup.founded}
+                    </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Team Size</span>
-                    <span className="text-sm font-medium">{startup.team.size} people</span>
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                    <span className="text-sm text-slate-500">Team Size</span>
+                    <span className="text-sm font-semibold text-slate-900">
+                      {startup.team.size} people
+                    </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Last Updated</span>
-                    <span className="text-sm font-medium">{new Date(startup.lastUpdated).toLocaleDateString()}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-500">Last Updated</span>
+                    <span className="text-sm font-semibold text-slate-900">
+                      {new Date(startup.lastUpdated).toLocaleDateString()}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -660,5 +975,5 @@ export default async function StartupProfilePage({ params }: { params: { id: str
         </div>
       </section>
     </div>
-  )
+  );
 }

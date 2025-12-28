@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button"; // Added shadcn Button
 import { CheckCircle, Clock, Users, Target } from "lucide-react";
 import { createIdea, updateIdea, getIdea } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -293,15 +294,15 @@ function ApplyPageContent() {
     return (
       <div className="min-h-screen bg-background py-16 px-4">
         <div className="container mx-auto max-w-2xl">
-          <Card className="text-center">
+          <Card className="text-center shadow-lg border border-primary/10">
             <CardHeader>
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle className="text-2xl">
+              <CardTitle className="text-2xl text-primary font-bold">
                 Idea {isEditing ? "Updated" : "Submitted"} Successfully!
               </CardTitle>
-              <CardDescription className="text-lg">
+              <CardDescription className="text-lg text-slate-600">
                 Thank you for{" "}
                 {isEditing ? "updating your idea" : "submitting your idea"} to
                 the AAU Startups Portal.{" "}
@@ -310,38 +311,41 @@ function ApplyPageContent() {
                   : "We've received your idea and will review it carefully."}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div className="space-y-2">
-                  <div className="mx-auto w-10 h-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-aau-blue" />
+            <CardContent className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div className="space-y-3">
+                  {/* Updated Icons: Primary Blue Background */}
+                  <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Clock className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-medium">Review Process</h3>
-                  <p className="text-sm text-muted-foreground">2-4 weeks</p>
+                  <h3 className="font-semibold text-slate-800">
+                    Review Process
+                  </h3>
+                  <p className="text-sm text-slate-500">2-4 weeks</p>
                 </div>
-                <div className="space-y-2">
-                  <div className="mx-auto w-10 h-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
-                    <Users className="h-5 w-5 text-aau-blue" />
+                <div className="space-y-3">
+                  <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Users className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-medium">Expert Review</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Industry mentors
-                  </p>
+                  <h3 className="font-semibold text-slate-800">
+                    Expert Review
+                  </h3>
+                  <p className="text-sm text-slate-500">Industry mentors</p>
                 </div>
-                <div className="space-y-2">
-                  <div className="mx-auto w-10 h-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
-                    <Target className="h-5 w-5 text-aau-blue" />
+                <div className="space-y-3">
+                  <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Target className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-medium">Next Steps</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Email notification
-                  </p>
+                  <h3 className="font-semibold text-slate-800">Next Steps</h3>
+                  <p className="text-sm text-slate-500">Email notification</p>
                 </div>
               </div>
 
-              <div className="bg-muted/50 p-4 rounded-lg text-left">
-                <h4 className="font-medium mb-2">What happens next?</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
+              <div className="bg-slate-50 p-6 rounded-xl text-left border border-slate-100">
+                <h4 className="font-semibold text-primary mb-3">
+                  What happens next?
+                </h4>
+                <ul className="text-sm text-slate-600 space-y-2">
                   <li>• You'll receive a confirmation email within 24 hours</li>
                   <li>• Our review committee will evaluate your application</li>
                   <li>• We may contact you for additional information</li>
@@ -352,19 +356,21 @@ function ApplyPageContent() {
                 </ul>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+                {/* Updated Buttons: Use shadcn components for consistency */}
+                <Button
                   onClick={() => (window.location.href = "/")}
-                  className="px-6 py-2 bg-aau-blue text-white rounded-md hover:bg-aau-blue/90 transition-colors"
+                  className="bg-primary hover:bg-blue-800 text-white font-bold px-8"
                 >
                   Return to Home
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => (window.location.href = "/startups")}
-                  className="px-6 py-2 border border-aau-blue text-aau-blue rounded-md hover:bg-aau-blue/5 transition-colors"
+                  className="border-primary text-primary hover:bg-primary/5 font-bold px-8"
                 >
                   Browse Startups
-                </button>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -377,14 +383,15 @@ function ApplyPageContent() {
     <div className="min-h-screen bg-background py-16 px-4">
       <div className="container mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <Badge className="bg-aau-gold text-aau-blue mb-4">
+        <div className="text-center mb-12 space-y-4">
+          {/* Updated Badge: Using Primary/Secondary colors */}
+          <Badge className="bg-primary/10 text-primary hover:bg-primary/20 px-4 py-1 text-sm font-medium rounded-full border-none">
             {isEditing ? "Editing Idea" : "Applications Open"}
           </Badge>
-          <h1 className="text-4xl font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-black text-primary tracking-tight">
             {isEditing ? "Edit Your Idea" : "Submit Your Idea"}
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
             {isEditing
               ? "Update your idea details and resubmit for review."
               : "Share your innovative idea with Ethiopia's premier startup incubation program. Get mentorship, funding, and resources to turn your idea into a successful business."}
@@ -393,13 +400,17 @@ function ApplyPageContent() {
 
         {/* Application Form */}
         {loading ? (
-          <div className="text-center py-8">Loading idea data...</div>
+          <div className="text-center py-16 text-primary animate-pulse">
+            Loading idea data...
+          </div>
         ) : (
-          <MultiStepForm
-            steps={steps}
-            onSubmit={handleSubmit}
-            initialData={initialData}
-          />
+          <div className="max-w-4xl mx-auto">
+            <MultiStepForm
+              steps={steps}
+              onSubmit={handleSubmit}
+              initialData={initialData}
+            />
+          </div>
         )}
       </div>
     </div>
@@ -411,7 +422,7 @@ export default function ApplyPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-background py-16 px-4 flex items-center justify-center">
-          Loading...
+          <div className="text-primary font-bold animate-pulse">Loading...</div>
         </div>
       }
     >

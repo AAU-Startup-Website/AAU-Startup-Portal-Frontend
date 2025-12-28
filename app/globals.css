@@ -4,75 +4,121 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated to official AAU branding colors */
-  --background: oklch(1 0 0); /* White #FFFFFF */
-  --foreground: oklch(0.2 0 0); /* Dark Gray */
-  --card: oklch(0.97 0 0); /* Light Gray */
-  --card-foreground: oklch(0.2 0 0);
+  /* --- AAU Official Palette (Light Mode) --- */
+
+  /* Background: White (#FFFFFF) */
+  --background: oklch(1 0 0);
+
+  /* Foreground: Dark Charcoal (#21282D) */
+  --foreground: oklch(0.24 0.02 245);
+
+  /* Card: White */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.02 245);
+
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0 0);
-  --primary: oklch(0.15 0.08 258); /* AAU Deep Blue #002147 */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.97 0 0); /* Light Gray */
-  --secondary-foreground: oklch(0.15 0.08 258);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.45 0.15 15); /* AAU Accent Red #8C1D40 */
+  --popover-foreground: oklch(0.24 0.02 245);
+
+  /* PRIMARY: Deep Institutional Blue (#005081) */
+  --primary: oklch(0.4 0.12 242);
+  --primary-foreground: oklch(1 0 0); /* White text */
+
+  /* SECONDARY: Light Gray-Blue (#CAD6DE) - Used for backgrounds/secondary buttons */
+  --secondary: oklch(0.88 0.03 240);
+  --secondary-foreground: oklch(
+    0.24 0.02 245
+  ); /* Dark text on light secondary */
+
+  /* MUTED: Light Gray-Blue (#CAD6DE) */
+  --muted: oklch(0.88 0.03 240);
+  /* MUTED FOREGROUND: Muted Gray (#7D818B) */
+  --muted-foreground: oklch(0.6 0.02 250);
+
+  /* ACCENT: AAU Red (#E63946) - Used sparingly for highlights */
+  --accent: oklch(0.6 0.2 25);
   --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+
+  /* DESTRUCTIVE: Same as Accent Red (#E63946) */
+  --destructive: oklch(0.6 0.2 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0 0);
-  --input: oklch(1 0 0);
-  --ring: oklch(0.15 0.08 258 / 0.2);
-  --chart-1: oklch(0.15 0.08 258); /* AAU Deep Blue */
-  --chart-2: oklch(0.45 0.15 15); /* AAU Red */
-  --chart-3: oklch(0.2 0 0); /* Dark Gray */
-  --chart-4: oklch(0.97 0 0); /* Light Gray */
-  --chart-5: oklch(0.3 0.08 258); /* Secondary Blue */
+
+  /* BORDER: Light Gray-Blue (#CAD6DE) */
+  --border: oklch(0.88 0.03 240);
+  --input: oklch(0.88 0.03 240);
+  /* RING: Primary Blue (#005081) */
+  --ring: oklch(0.4 0.12 242 / 0.5);
+
+  /* Chart Colors */
+  --chart-1: oklch(0.4 0.12 242); /* Primary Blue */
+  --chart-2: oklch(0.6 0.2 25); /* Accent Red */
+  --chart-3: oklch(0.24 0.02 245); /* Dark Charcoal */
+  --chart-4: oklch(0.6 0.11 238); /* Secondary Blue Variant (#4378A0 approx) */
+  --chart-5: oklch(0.88 0.03 240); /* Light Gray-Blue */
+
   --radius: 0.5rem;
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.2 0 0);
-  --sidebar-primary: oklch(0.15 0.08 258);
+
+  /* Sidebar */
+  --sidebar: oklch(0.98 0 0); /* Slightly off-white */
+  --sidebar-foreground: oklch(0.24 0.02 245);
+  --sidebar-primary: oklch(0.4 0.12 242);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.2 0 0);
-  --sidebar-border: oklch(0.9 0 0);
-  --sidebar-ring: oklch(0.15 0.08 258 / 0.2);
+  --sidebar-accent: oklch(0.88 0.03 240);
+  --sidebar-accent-foreground: oklch(0.24 0.02 245);
+  --sidebar-border: oklch(0.88 0.03 240);
+  --sidebar-ring: oklch(0.4 0.12 242 / 0.2);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.2 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.2 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.25 0.08 258); /* Lighter blue for dark mode */
+  /* --- AAU Official Palette (Dark Mode) --- */
+
+  /* Background: Dark Charcoal (#21282D) */
+  --background: oklch(0.24 0.02 245);
+  /* Foreground: White or very light gray */
+  --foreground: oklch(0.98 0 0);
+
+  /* Card: Slightly lighter than background */
+  --card: oklch(0.28 0.02 245);
+  --card-foreground: oklch(0.98 0 0);
+
+  --popover: oklch(0.28 0.02 245);
+  --popover-foreground: oklch(0.98 0 0);
+
+  /* Primary: Lighter Blue (#4378A0) for visibility on dark */
+  --primary: oklch(0.6 0.11 238);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.25 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.25 0 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.55 0.15 15); /* Lighter red for dark mode */
+
+  /* Secondary: Darker version of Gray-Blue */
+  --secondary: oklch(0.35 0.03 240);
+  --secondary-foreground: oklch(0.98 0 0);
+
+  --muted: oklch(0.35 0.03 240);
+  --muted-foreground: oklch(0.7 0.02 250);
+
+  /* Accent: Red remains Red (#E63946) */
+  --accent: oklch(0.6 0.2 25);
   --accent-foreground: oklch(1 0 0);
+
   --destructive: oklch(0.6 0.2 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.25 0 0);
-  --input: oklch(0.25 0 0);
-  --ring: oklch(0.25 0.08 258 / 0.3);
-  --chart-1: oklch(0.25 0.08 258);
-  --chart-2: oklch(0.55 0.15 15);
-  --chart-3: oklch(0.8 0 0);
-  --chart-4: oklch(0.25 0 0);
-  --chart-5: oklch(0.4 0.08 258);
-  --sidebar: oklch(0.18 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.25 0.08 258);
+
+  --border: oklch(0.35 0.03 240);
+  --input: oklch(0.35 0.03 240);
+  --ring: oklch(0.6 0.11 238 / 0.4);
+
+  --chart-1: oklch(0.6 0.11 238);
+  --chart-2: oklch(0.6 0.2 25);
+  --chart-3: oklch(0.98 0 0);
+  --chart-4: oklch(0.4 0.12 242);
+  --chart-5: oklch(0.7 0.02 250);
+
+  --sidebar: oklch(0.2 0.02 245);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.6 0.11 238);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.25 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.25 0 0);
-  --sidebar-ring: oklch(0.25 0.08 258 / 0.3);
+  --sidebar-accent: oklch(0.35 0.03 240);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.35 0.03 240);
+  --sidebar-ring: oklch(0.6 0.11 238 / 0.4);
 }
 
 @theme inline {
@@ -123,21 +169,8 @@
   body {
     @apply bg-background text-foreground;
   }
-  /* Updated AAU-specific utility classes with official colors */
-  .aau-blue {
-    color: #002147;
-  }
-  .aau-red {
-    color: #8c1d40;
-  }
-  .bg-aau-blue {
-    background-color: #002147;
-  }
-  .bg-aau-red {
-    background-color: #8c1d40;
-  }
 
-  /* Added loading animations */
+  /* AAU Custom Utility Animations */
   @keyframes fadeInUp {
     from {
       opacity: 0;

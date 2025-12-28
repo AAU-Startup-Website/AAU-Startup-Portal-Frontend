@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Users,
   DollarSign,
+  ArrowRight,
 } from "lucide-react";
 
 export default function StoriesPage() {
@@ -76,174 +77,243 @@ export default function StoriesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Featured Story */}
-      <section className="py-16 px-4">
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Featured Story Header */}
+      <section className="py-8 px-4 bg-slate-50 border-b border-slate-100">
         <div className="container mx-auto max-w-7xl">
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-4">Featured Story</h2>
-            <Card className="overflow-hidden">
-              <div className="md:flex">
-                <div className="md:w-1/2">
+          <div className="text-center mb-8 space-y-3">
+            <h1 className="text-3xl md:text-4xl font-black text-primary tracking-tight">
+              Success Stories
+            </h1>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Discover how AAU students and alumni are transforming industries
+              and building the future of Ethiopia.
+            </p>
+          </div>
+
+          {/* Featured Card */}
+          <Card className="overflow-hidden shadow-xl border-slate-200 hover:shadow-2xl transition-shadow duration-300">
+            <div className="md:flex">
+              <div className="md:w-1/2 relative group">
+                <div className="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors duration-500 z-10" />
+                <div className="h-40 md:h-52 lg:h-56 relative overflow-hidden">
                   <img
                     src={stories[0].image || "/placeholder.svg"}
                     alt={stories[0].company}
-                    className="w-full h-64 md:h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
                   />
-                </div>
-                <div className="md:w-1/2 p-8">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={stories[0].founderAvatar || "/placeholder.svg"}
-                          alt={stories[0].founder}
-                        />
-                        <AvatarFallback className="bg-aau-blue text-white">
-                          {stories[0].founder
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">{stories[0].founder}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Founder, {stories[0].company}
-                        </p>
-                      </div>
-                    </div>
+                  {/* Gradient Overlay for Text Clarity if needed */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
 
-                    <div>
-                      <Badge variant="outline" className="mb-3">
-                        {stories[0].category}
-                      </Badge>
-                      <h2 className="text-2xl font-bold mb-3">
-                        {stories[0].title}
-                      </h2>
-                      <p className="text-muted-foreground mb-4">
-                        {stories[0].excerpt}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4 py-4 border-y">
-                      <div className="text-center">
-                        <div className="flex items-center justify-center mb-1">
-                          <DollarSign className="h-4 w-4 text-aau-gold" />
-                        </div>
-                        <div className="font-semibold">
-                          {stories[0].metrics.revenue}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Revenue
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="flex items-center justify-center mb-1">
-                          <Users className="h-4 w-4 text-aau-blue" />
-                        </div>
-                        <div className="font-semibold">
-                          {stories[0].metrics.employees}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Employees
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="flex items-center justify-center mb-1">
-                          <TrendingUp className="h-4 w-4 text-green-600" />
-                        </div>
-                        <div className="font-semibold">
-                          {stories[0].metrics.funding}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Funding
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <CalendarDays className="h-4 w-4 mr-2" />
-                        {new Date(
-                          stories[0].publishDate
-                        ).toLocaleDateString()}{" "}
-                        • {stories[0].readTime}
-                      </div>
-                      <Button className="bg-aau-blue hover:bg-aau-blue/90">
-                        Read Full Story
-                        <ExternalLink className="h-4 w-4 ml-2" />
-                      </Button>
-                    </div>
+                  <div className="absolute bottom-4 left-4 z-20">
+                    <Badge className="bg-white/90 text-primary hover:bg-white backdrop-blur-md border-none shadow-sm px-3 py-1 text-sm font-bold">
+                      Featured
+                    </Badge>
                   </div>
                 </div>
               </div>
-            </Card>
-          </div>
+
+              <div className="md:w-1/2 p-6 flex flex-col justify-center bg-white">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-14 w-14 border-2 border-slate-100 shadow-sm">
+                      <AvatarImage
+                        src={stories[0].founderAvatar || "/placeholder.svg"}
+                        alt={stories[0].founder}
+                      />
+                      <AvatarFallback className="bg-primary text-white font-bold">
+                        {stories[0].founder
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-bold text-lg text-slate-900 leading-none mb-1">
+                        {stories[0].founder}
+                      </p>
+                      <p className="text-sm text-slate-500 font-medium">
+                        Founder,{" "}
+                        <span className="text-primary">
+                          {stories[0].company}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <Badge
+                        variant="secondary"
+                        className="bg-blue-50 text-primary hover:bg-blue-100 border-none font-medium"
+                      >
+                        {stories[0].category}
+                      </Badge>
+                      <span className="text-sm text-slate-400 font-medium">
+                        {stories[0].readTime}
+                      </span>
+                    </div>
+
+                    <h2 className="text-3xl font-bold text-slate-900 mb-3 leading-tight hover:text-primary transition-colors cursor-pointer">
+                      <Link href={`/stories/${stories[0].id}`}>
+                        {stories[0].title}
+                      </Link>
+                    </h2>
+                    <p className="text-lg text-slate-600 leading-relaxed">
+                      {stories[0].excerpt}
+                    </p>
+                  </div>
+
+                  {/* Metrics Grid */}
+                  <div className="grid grid-cols-3 gap-6 py-5 border-y border-slate-100">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <DollarSign className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div className="font-bold text-slate-900 text-lg">
+                        {stories[0].metrics.revenue}
+                      </div>
+                      <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                        Revenue
+                      </div>
+                    </div>
+                    <div className="text-center border-l border-slate-100">
+                      <div className="flex items-center justify-center mb-2">
+                        <Users className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="font-bold text-slate-900 text-lg">
+                        {stories[0].metrics.employees}
+                      </div>
+                      <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                        Employees
+                      </div>
+                    </div>
+                    <div className="text-center border-l border-slate-100">
+                      <div className="flex items-center justify-center mb-2">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="font-bold text-slate-900 text-lg">
+                        {stories[0].metrics.funding}
+                      </div>
+                      <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                        Funding
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center text-sm text-slate-500 font-medium">
+                      <CalendarDays className="h-4 w-4 mr-2 text-slate-400" />
+                      {new Date(stories[0].publishDate).toLocaleDateString()}
+                    </div>
+                    <Button
+                      className="bg-primary hover:bg-blue-800 text-white shadow-md font-semibold px-6"
+                      asChild
+                    >
+                      <Link href={`/stories/${stories[0].id}`}>
+                        Read Full Story
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
       </section>
 
-      {/* More Stories */}
-      <section className="py-16 px-4 bg-muted/30">
+      {/* More Stories Grid */}
+      <section className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-7xl">
-          <div className="flex justify-between items-center mb-12">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2">More Success Stories</h2>
-              <p className="text-muted-foreground">
-                Get inspired by our entrepreneur community
+              <h2 className="text-3xl font-bold text-primary mb-3">
+                More Success Stories
+              </h2>
+              <p className="text-slate-600 text-lg">
+                Get inspired by our thriving entrepreneur community
               </p>
             </div>
-            <Button variant="outline">View All Stories</Button>
+            <Button
+              variant="outline"
+              className="border-primary text-primary hover:bg-primary/5 font-semibold"
+            >
+              View All Stories
+            </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {stories.slice(1).map((story) => (
               <Card
                 key={story.id}
-                className="hover:shadow-lg transition-shadow overflow-hidden"
+                className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-slate-200 h-full flex flex-col"
               >
-                <div className="aspect-video">
+                <div className="relative overflow-hidden h-52">
                   <img
                     src={story.image || "/placeholder.svg"}
                     alt={story.company}
-                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
                   />
-                </div>
-                <CardHeader>
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge variant="outline">{story.category}</Badge>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <CalendarDays className="h-3 w-3 mr-1" />
-                      {new Date(story.publishDate).toLocaleDateString()}
-                    </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+
+                  <div className="absolute top-4 left-4">
+                    <Badge className="bg-white/90 text-primary backdrop-blur-sm shadow-sm border-none font-bold">
+                      {story.category}
+                    </Badge>
                   </div>
-                  <CardTitle className="text-xl">{story.title}</CardTitle>
-                  <CardDescription>{story.excerpt}</CardDescription>
+                </div>
+
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2 text-xs text-slate-500 mb-3 font-medium">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {new Date(story.publishDate).toLocaleDateString()}
+                    <span className="text-slate-300">•</span>
+                    <span>{story.readTime}</span>
+                  </div>
+                  <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors leading-tight line-clamp-2">
+                    <Link href={`/stories/${story.id}`}>{story.title}</Link>
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
+
+                <CardContent className="flex-1 flex flex-col justify-between">
+                  <CardDescription className="text-slate-600 mb-6 line-clamp-3">
+                    {story.excerpt}
+                  </CardDescription>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
                     <div className="flex items-center space-x-3">
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-9 w-9 border border-slate-100">
                         <AvatarImage
                           src={story.founderAvatar || "/placeholder.svg"}
                           alt={story.founder}
                         />
-                        <AvatarFallback className="bg-aau-blue text-white text-xs">
-                          {story.founder
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                        <AvatarFallback className="bg-primary text-white text-xs font-bold">
+                          {story.founder.substring(0, 2)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-medium">{story.founder}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {story.founder}
+                        </p>
+                        <p className="text-xs text-slate-500 font-medium truncate max-w-[100px]">
                           {story.company}
                         </p>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline">
-                      Read More
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-primary hover:text-primary hover:bg-primary/10 font-semibold -mr-2"
+                      asChild
+                    >
+                      <Link href={`/stories/${story.id}`}>
+                        Read <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      </Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -254,22 +324,32 @@ export default function StoriesPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-aau-blue text-white">
-        <div className="container mx-auto max-w-7xl text-center">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Ready to Start Your Journey?
+      <section className="py-24 px-4 bg-primary relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <svg
+            className="h-full w-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
+          </svg>
+        </div>
+
+        <div className="container mx-auto max-w-7xl text-center relative z-10">
+          <div className="max-w-3xl mx-auto space-y-8">
+            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
+              Ready to Write Your Own Success Story?
             </h2>
-            <p className="text-xl opacity-90">
+            <p className="text-xl text-blue-100 leading-relaxed font-light">
               Join hundreds of entrepreneurs who have transformed their ideas
-              into successful businesses
+              into successful businesses with AAU Startup Center.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-5 justify-center pt-4">
               <Button
                 size="lg"
-                variant="secondary"
                 asChild
-                className="bg-aau-gold text-aau-blue hover:bg-aau-gold/90"
+                className="bg-white text-primary hover:bg-blue-50 font-bold px-10 h-14 text-lg shadow-lg border-none"
               >
                 <Link href="/apply">Apply Now</Link>
               </Button>
@@ -277,7 +357,7 @@ export default function StoriesPage() {
                 size="lg"
                 variant="outline"
                 asChild
-                className="border-white text-white hover:text-aau-blue bg-transparent"
+                className="border-2 border-white/30 text-white hover:bg-white/10 hover:text-white bg-transparent font-bold px-10 h-14 text-lg backdrop-blur-sm"
               >
                 <Link href="/cofounders">Find Co-founders</Link>
               </Button>
