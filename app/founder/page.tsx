@@ -21,13 +21,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  AreaChart,
-  Area,
 } from "recharts";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import {
@@ -52,6 +61,12 @@ import {
   getMilestones,
   updateMilestone,
   getPhases,
+  getMeetings,
+  createMeeting,
+  updateMeeting,
+  deleteMeeting,
+  getProfile,
+  getMentors,
 } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
@@ -73,6 +88,20 @@ function FounderDashboard() {
   const [milestones, setMilestones] = useState<any[]>([]);
   const [milestonesLoading, setMilestonesLoading] = useState(false);
   const [phases, setPhases] = useState<any[]>([]);
+  const [meetings, setMeetings] = useState<any[]>([]);
+  const [meetingsLoading, setMeetingsLoading] = useState(false);
+  const [createMeetingDialogOpen, setCreateMeetingDialogOpen] = useState(false);
+  const [editingMeeting, setEditingMeeting] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [mentors, setMentors] = useState<any[]>([]);
+  const [newMeeting, setNewMeeting] = useState({
+    startup: "",
+    mentor: "",
+    title: "",
+    description: "",
+    schedule_date: "",
+    link: "",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,6 +109,12 @@ function FounderDashboard() {
         const token = getToken();
         console.log("Token:", token);
         if (token) {
+          // Fetch current user profile first
+          console.log("Fetching current user profile...");
+          const userProfile = await getProfile(token);
+          console.log("User profile:", userProfile);
+          setCurrentUser(userProfile);
+
           // Fetch ideas
           console.log("Fetching ideas...");
           const ideasData = await getIdeas(token);
@@ -121,6 +156,30 @@ function FounderDashboard() {
             console.error("Failed to fetch phases:", phasesError);
             // Set empty phases array - UI will handle gracefully
             setPhases([]);
+          }
+
+          // Fetch meetings for the founder
+          console.log("Fetching meetings...");
+          try {
+            const meetingsData = await getMeetings(token);
+            console.log("Meetings data:", meetingsData);
+            setMeetings(meetingsData);
+          } catch (meetingsError) {
+            console.error("Failed to fetch meetings:", meetingsError);
+            // Set empty meetings array - UI will handle gracefully
+            setMeetings([]);
+          }
+
+          // Fetch mentors
+          console.log("Fetching mentors...");
+          try {
+            const mentorsData = await getMentors(token);
+            console.log("Mentors data:", mentorsData);
+            setMentors(mentorsData);
+          } catch (mentorsError) {
+            console.error("Failed to fetch mentors:", mentorsError);
+            // Set empty mentors array - UI will handle gracefully
+            setMentors([]);
           }
         } else {
           console.log("No token found");
@@ -245,16 +304,169 @@ function FounderDashboard() {
     }
   };
 
-  // Mock data for founder's startup
-  const startupMetrics = [
-    { month: "Jan", users: 1200, revenue: 5400 },
-    { month: "Feb", users: 1800, revenue: 7200 },
-    { month: "Mar", users: 2400, revenue: 9600 },
-    { month: "Apr", users: 3200, revenue: 12800 },
-    { month: "May", users: 4100, revenue: 16400 },
-    { month: "Jun", users: 5000, revenue: 20000 },
-  ];
+  const handleCreateMeeting = async () => {
+    try {
+      const token = getToken();
+      if (token && currentUser) {
+        // Validate required fields
+        if (
+          !newMeeting.startup ||
+          !newMeeting.mentor ||
+          !newMeeting.title ||
+          !newMeeting.schedule_date
+        ) {
+          alert(
+            "Please fill in all required fields (Startup, Mentor, Title, Date & Time)"
+          );
+          return;
+        }
 
+        // Validate link if provided
+        if (newMeeting.link && !isValidUrl(newMeeting.link)) {
+          alert("Please enter a valid URL for the meeting link");
+          return;
+        }
+
+        const meetingData = {
+          startup: parseInt(newMeeting.startup),
+          mentor: parseInt(newMeeting.mentor),
+          founder: currentUser.id,
+          title: newMeeting.title,
+          description: newMeeting.description || "",
+          schedule_date: new Date(newMeeting.schedule_date).toISOString(),
+          link: newMeeting.link || "",
+        };
+
+        console.log("Creating meeting:", meetingData);
+        const createdMeeting = await createMeeting(token, meetingData);
+        console.log("Meeting created:", createdMeeting);
+
+        // Add to local state
+        setMeetings([...meetings, createdMeeting]);
+
+        // Reset form
+        setNewMeeting({
+          startup: "",
+          mentor: "",
+          title: "",
+          description: "",
+          schedule_date: "",
+          link: "",
+        });
+        setCreateMeetingDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to create meeting:", error);
+      alert("Failed to create meeting. Please try again.");
+    }
+  };
+
+  const handleUpdateMeeting = async () => {
+    if (!editingMeeting) return;
+
+    try {
+      const token = getToken();
+      if (token && currentUser) {
+        // Validate required fields
+        if (
+          !newMeeting.mentor ||
+          !newMeeting.title ||
+          !newMeeting.schedule_date
+        ) {
+          alert(
+            "Please fill in all required fields (Mentor, Title, Date & Time)"
+          );
+          return;
+        }
+
+        // Validate link if provided
+        if (newMeeting.link && !isValidUrl(newMeeting.link)) {
+          alert("Please enter a valid URL for the meeting link");
+          return;
+        }
+
+        const meetingData = {
+          mentor: parseInt(newMeeting.mentor),
+          founder: currentUser.id,
+          title: newMeeting.title,
+          description: newMeeting.description || "",
+          schedule_date: new Date(newMeeting.schedule_date).toISOString(),
+          link: newMeeting.link || "",
+        };
+
+        console.log("Updating meeting:", editingMeeting.id, meetingData);
+        const updatedMeeting = await updateMeeting(
+          token,
+          editingMeeting.id,
+          meetingData
+        );
+        console.log("Meeting updated:", updatedMeeting);
+
+        // Update local state
+        setMeetings(
+          meetings.map((m) => (m.id === editingMeeting.id ? updatedMeeting : m))
+        );
+
+        // Reset form
+        setNewMeeting({
+          startup: "",
+          mentor: "",
+          title: "",
+          description: "",
+          schedule_date: "",
+          link: "",
+        });
+        setEditingMeeting(null);
+        setCreateMeetingDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to update meeting:", error);
+      alert("Failed to update meeting. Please try again.");
+    }
+  };
+
+  const handleDeleteMeeting = async (meetingId: number) => {
+    if (!confirm("Are you sure you want to delete this meeting?")) return;
+
+    try {
+      const token = getToken();
+      if (token) {
+        console.log("Deleting meeting:", meetingId);
+        await deleteMeeting(token, meetingId);
+        console.log("Meeting deleted successfully");
+
+        // Remove from local state
+        setMeetings(meetings.filter((m) => m.id !== meetingId));
+      }
+    } catch (error) {
+      console.error("Failed to delete meeting:", error);
+      alert("Failed to delete meeting. Please try again.");
+    }
+  };
+
+  const handleEditMeeting = (meeting: any) => {
+    setEditingMeeting(meeting);
+    setNewMeeting({
+      startup: meeting.startup.toString(),
+      mentor: meeting.mentor.toString(),
+      title: meeting.title,
+      description: meeting.description || "",
+      schedule_date: new Date(meeting.schedule_date).toISOString().slice(0, 16),
+      link: meeting.link || "",
+    });
+    setCreateMeetingDialogOpen(true);
+  };
+
+  const isValidUrl = (string: string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  // Mock data for founder's startup
   const applications = [
     {
       id: 1,
@@ -272,30 +484,6 @@ function FounderDashboard() {
       submittedAt: "2024-12-01",
       reviewedAt: null,
       feedback: null,
-    },
-  ];
-
-  const upcomingMeetings = [
-    {
-      id: 1,
-      title: "Mentor Session with Dr. Alemayehu",
-      date: "2024-12-15",
-      time: "14:00",
-      type: "mentor",
-    },
-    {
-      id: 2,
-      title: "Investor Pitch Practice",
-      date: "2024-12-18",
-      time: "10:00",
-      type: "presentation",
-    },
-    {
-      id: 3,
-      title: "Team Strategy Meeting",
-      date: "2024-12-20",
-      time: "09:00",
-      type: "internal",
     },
   ];
 
@@ -358,50 +546,16 @@ function FounderDashboard() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Active Users
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-aau-blue">
-                      5,000
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      <span className="text-green-600">+22%</span> from last
-                      month
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Monthly Revenue
-                    </CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-aau-blue">
-                      $20,000
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      <span className="text-green-600">+28%</span> from last
-                      month
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Team Size
+                      My Startups
                     </CardTitle>
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-aau-blue">12</div>
+                    <div className="text-2xl font-bold text-aau-blue">
+                      {startups.length}
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      <span className="text-blue-600">+3</span> new hires
+                      Active ventures
                     </p>
                   </CardContent>
                 </Card>
@@ -409,60 +563,188 @@ function FounderDashboard() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Funding Raised
+                      Completed Milestones
                     </CardTitle>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <CheckCircle className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-aau-blue">
-                      $2.5M
+                      {startups.reduce((total, startup) => {
+                        // Count completed milestones for each startup
+                        const startupMilestones = milestones.filter(
+                          (m) => m.startup === startup.id
+                        );
+                        return (
+                          total +
+                          startupMilestones.filter((m) => m.completed).length
+                        );
+                      }, 0)}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Series A completed
+                      Across all startups
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Upcoming Meetings
+                    </CardTitle>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-aau-blue">
+                      {
+                        meetings.filter(
+                          (meeting) =>
+                            new Date(meeting.schedule_date) > new Date()
+                        ).length
+                      }
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Scheduled sessions
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      My Ideas
+                    </CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-aau-blue">
+                      {ideas.length}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Submitted applications
                     </p>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Growth Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Growth Metrics</CardTitle>
-                  <CardDescription>
-                    User growth and revenue trends over the past 6 months
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={startupMetrics}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Area
-                        type="monotone"
-                        dataKey="users"
-                        stackId="1"
-                        stroke="#003DA5"
-                        fill="#003DA5"
-                        fillOpacity={0.6}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="revenue"
-                        stackId="2"
-                        stroke="#FFD700"
-                        fill="#FFD700"
-                        fillOpacity={0.6}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+              {/* Progress Overview */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Startup Progress Cards */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Startup Progress</CardTitle>
+                    <CardDescription>
+                      Current status of your ventures
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {startups.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">
+                          No startups yet. Start by submitting an idea!
+                        </p>
+                      </div>
+                    ) : (
+                      startups.map((startup) => {
+                        const startupMilestones = milestones.filter(
+                          (m) => m.startup === startup.id
+                        );
+                        const completedMilestones = startupMilestones.filter(
+                          (m) => m.completed
+                        ).length;
+                        const totalMilestones = startupMilestones.length;
+                        const progress =
+                          totalMilestones > 0
+                            ? (completedMilestones / totalMilestones) * 100
+                            : 0;
+
+                        return (
+                          <div key={startup.id} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium">{startup.name}</h4>
+                              <Badge variant="outline">
+                                {startup.current_phase_details?.name ||
+                                  "Phase 1"}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">
+                                {completedMilestones} of {totalMilestones}{" "}
+                                milestones completed
+                              </span>
+                              <span className="font-medium">
+                                {Math.round(progress)}%
+                              </span>
+                            </div>
+                            <Progress value={progress} className="h-2" />
+                          </div>
+                        );
+                      })
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Recent Activity */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                    <CardDescription>
+                      Latest updates and milestones
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {milestones
+                        .filter((m) => m.completed)
+                        .sort(
+                          (a, b) =>
+                            new Date(b.updated_at || b.due_date).getTime() -
+                            new Date(a.updated_at || a.due_date).getTime()
+                        )
+                        .slice(0, 5)
+                        .map((milestone) => {
+                          const startup = startups.find(
+                            (s) => s.id === milestone.startup
+                          );
+                          return (
+                            <div
+                              key={milestone.id}
+                              className="flex items-start space-x-3"
+                            >
+                              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                              </div>
+                              <div className="flex-1 space-y-1">
+                                <p className="text-sm font-medium">
+                                  {milestone.title}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {startup?.name} • Completed{" "}
+                                  {new Date(
+                                    milestone.updated_at || milestone.due_date
+                                  ).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      {milestones.filter((m) => m.completed).length === 0 && (
+                        <div className="text-center py-8">
+                          <p className="text-muted-foreground">
+                            No completed milestones yet.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
               {/* Quick Actions */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <Card
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => (window.location.href = "/apply")}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">
                       <div className="h-12 w-12 bg-aau-blue/10 rounded-lg flex items-center justify-center">
@@ -478,32 +760,38 @@ function FounderDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <Card
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => setActiveTab("meetings")}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">
                       <div className="h-12 w-12 bg-aau-gold/10 rounded-lg flex items-center justify-center">
                         <Calendar className="h-6 w-6 text-aau-gold" />
                       </div>
                       <div>
-                        <h3 className="font-semibold">Book Resources</h3>
+                        <h3 className="font-semibold">Schedule Meeting</h3>
                         <p className="text-sm text-muted-foreground">
-                          Reserve workspace
+                          Book time with mentors
                         </p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <Card
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => setActiveTab("startup")}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">
                       <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <MessageSquare className="h-6 w-6 text-green-600" />
+                        <TrendingUp className="h-6 w-6 text-green-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold">Contact Mentor</h3>
+                        <h3 className="font-semibold">View Progress</h3>
                         <p className="text-sm text-muted-foreground">
-                          Get guidance
+                          Track startup milestones
                         </p>
                       </div>
                     </div>
@@ -752,41 +1040,90 @@ function FounderDashboard() {
                         Your scheduled meetings and events
                       </CardDescription>
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href="/bookings">
-                        View All Bookings
-                        <ArrowUpRight className="h-4 w-4 ml-1" />
-                      </Link>
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCreateMeetingDialogOpen(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Schedule Meeting
+                      </Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/bookings">
+                          View All Bookings
+                          <ArrowUpRight className="h-4 w-4 ml-1" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {upcomingMeetings.map((meeting) => (
-                      <div
-                        key={meeting.id}
-                        className="flex items-center justify-between p-4 border rounded-lg"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
-                            <Calendar className="h-5 w-5 text-aau-blue" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium">{meeting.title}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {new Date(meeting.date).toLocaleDateString()} at{" "}
-                              {meeting.time}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline">{meeting.type}</Badge>
-                          <Button variant="outline" size="sm">
-                            Join
-                          </Button>
-                        </div>
+                    {meetings.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">
+                          No meetings scheduled yet.
+                        </p>
                       </div>
-                    ))}
+                    ) : (
+                      meetings.map((meeting) => (
+                        <div
+                          key={meeting.id}
+                          className="flex items-center justify-between p-4 border rounded-lg"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
+                              <Calendar className="h-5 w-5 text-aau-blue" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium">{meeting.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(
+                                  meeting.schedule_date
+                                ).toLocaleDateString()}{" "}
+                                at{" "}
+                                {new Date(
+                                  meeting.schedule_date
+                                ).toLocaleTimeString()}
+                              </p>
+                              {meeting.description && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {meeting.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditMeeting(meeting)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteMeeting(meeting.id)}
+                            >
+                              Delete
+                            </Button>
+                            {meeting.link && (
+                              <Button
+                                size="sm"
+                                className="bg-aau-blue hover:bg-aau-blue/90"
+                                onClick={() =>
+                                  window.open(meeting.link, "_blank")
+                                }
+                              >
+                                Join Meeting
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -794,6 +1131,140 @@ function FounderDashboard() {
           </Tabs>
         </div>
       </section>
+
+      {/* Create/Edit Meeting Dialog */}
+      <Dialog
+        open={createMeetingDialogOpen}
+        onOpenChange={setCreateMeetingDialogOpen}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              {editingMeeting ? "Edit Meeting" : "Schedule New Meeting"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingMeeting
+                ? "Update the meeting details below."
+                : "Schedule a new mentoring session with one of your assigned mentors."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="startup">Startup</Label>
+              <Select
+                value={newMeeting.startup}
+                onValueChange={(value) =>
+                  setNewMeeting({ ...newMeeting, startup: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a startup" />
+                </SelectTrigger>
+                <SelectContent>
+                  {startups.map((startup) => (
+                    <SelectItem key={startup.id} value={startup.id.toString()}>
+                      {startup.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="mentor">Mentor</Label>
+              <Select
+                value={newMeeting.mentor}
+                onValueChange={(value) =>
+                  setNewMeeting({ ...newMeeting, mentor: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a mentor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mentors.map((mentor) => (
+                    <SelectItem key={mentor.id} value={mentor.id.toString()}>
+                      {mentor.username}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="title">Meeting Title</Label>
+              <Input
+                id="title"
+                value={newMeeting.title}
+                onChange={(e) =>
+                  setNewMeeting({ ...newMeeting, title: e.target.value })
+                }
+                placeholder="e.g., Weekly Progress Review"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea
+                id="description"
+                value={newMeeting.description}
+                onChange={(e) =>
+                  setNewMeeting({ ...newMeeting, description: e.target.value })
+                }
+                placeholder="Meeting agenda or notes"
+              />
+            </div>
+            <div>
+              <Label htmlFor="schedule_date">Date & Time</Label>
+              <Input
+                id="schedule_date"
+                type="datetime-local"
+                value={newMeeting.schedule_date}
+                onChange={(e) =>
+                  setNewMeeting({
+                    ...newMeeting,
+                    schedule_date: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="link">Meeting Link (Optional)</Label>
+              <Input
+                id="link"
+                value={newMeeting.link}
+                onChange={(e) =>
+                  setNewMeeting({ ...newMeeting, link: e.target.value })
+                }
+                placeholder="https://meet.google.com/abc-defg"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCreateMeetingDialogOpen(false);
+                setEditingMeeting(null);
+                setNewMeeting({
+                  startup: "",
+                  mentor: "",
+                  title: "",
+                  description: "",
+                  schedule_date: "",
+                  link: "",
+                });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={
+                editingMeeting ? handleUpdateMeeting : handleCreateMeeting
+              }
+            >
+              {editingMeeting ? "Update Meeting" : "Schedule Meeting"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

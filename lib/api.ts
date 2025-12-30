@@ -352,3 +352,116 @@ export const createMilestone = async (token: string, milestoneData: any) => {
   console.log("Create milestone response:", result);
   return result;
 };
+
+// Get meetings
+export const getMeetings = async (token: string) => {
+  console.log("Making API call to get meetings");
+  const response = await fetch(`${API_BASE_URL}/meetings/`, {
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  console.log("Get meetings response status:", response.status);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Get meetings API error:", errorText);
+    throw new Error("Failed to fetch meetings");
+  }
+  const data = await response.json();
+  console.log("Get meetings response data:", data);
+  return data;
+};
+
+// Create meeting
+export const createMeeting = async (token: string, meetingData: any) => {
+  console.log("Making API call to create meeting with data:", meetingData);
+  const response = await fetch(`${API_BASE_URL}/meetings/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Token ${token}`,
+    },
+    body: JSON.stringify(meetingData),
+  });
+  console.log("Create meeting response status:", response.status);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Create meeting API error:", errorText);
+    throw new Error("Failed to create meeting");
+  }
+  const result = await response.json();
+  console.log("Create meeting response:", result);
+  return result;
+};
+
+// Update meeting
+export const updateMeeting = async (
+  token: string,
+  meetingId: number,
+  meetingData: any
+) => {
+  console.log(
+    "Making API call to update meeting:",
+    meetingId,
+    "with data:",
+    meetingData
+  );
+  const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}/`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Token ${token}`,
+    },
+    body: JSON.stringify(meetingData),
+  });
+  console.log("Update meeting response status:", response.status);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Update meeting API error:", errorText);
+    throw new Error("Failed to update meeting");
+  }
+  const result = await response.json();
+  console.log("Update meeting response:", result);
+  return result;
+};
+
+// Delete meeting
+export const deleteMeeting = async (token: string, meetingId: number) => {
+  console.log("Making API call to delete meeting:", meetingId);
+  const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}/`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  console.log("Delete meeting response status:", response.status);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Delete meeting API error:", errorText);
+    throw new Error("Failed to delete meeting");
+  }
+  console.log("Delete meeting successful");
+  return true;
+};
+
+// Get mentors (users with role "mentor")
+export const getMentors = async (token: string) => {
+  console.log("Making API call to get mentors");
+  const response = await fetch(`${API_BASE_URL}/users/users/`, {
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  console.log("Get mentors response status:", response.status);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Get mentors API error:", errorText);
+    throw new Error("Failed to fetch mentors");
+  }
+  const data = await response.json();
+  console.log("Get mentors response data:", data);
+  // Filter users with role "mentor"
+  const mentors = data.filter((user: any) => user.profile?.role === "mentor");
+  console.log("Filtered mentors:", mentors);
+  return mentors;
+};

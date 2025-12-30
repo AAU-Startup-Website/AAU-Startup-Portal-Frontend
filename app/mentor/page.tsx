@@ -14,15 +14,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { AuthGuard } from "@/components/auth/auth-guard";
-import {
-  Users,
-  Calendar,
-  MessageSquare,
-  ArrowUpRight,
-  Plus,
-} from "lucide-react";
+import { Users, Calendar, MessageSquare, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { getStartups } from "@/lib/api";
+import { getStartups, getMeetings } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { StartupProgressTab } from "@/components/startup/StartupProgressTab";
 
@@ -40,6 +34,8 @@ function MentorDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedStartup, setSelectedStartup] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"list" | "progress">("list");
+  const [meetings, setMeetings] = useState<any[]>([]);
+  const [meetingsLoading, setMeetingsLoading] = useState(false);
 
   useEffect(() => {
     const fetchAssignedStartups = async () => {
@@ -71,6 +67,39 @@ function MentorDashboard() {
           }));
 
           setAssignedStartups(transformedStartups);
+
+          // Fetch meetings for this mentor
+          console.log("Fetching meetings for mentor...");
+          try {
+            const meetingsData = await getMeetings(token);
+            console.log("Meetings data:", meetingsData);
+            setMeetings(meetingsData);
+          } catch (meetingsError) {
+            console.error("Failed to fetch meetings:", meetingsError);
+            // Mock meetings for testing
+            setMeetings([
+              {
+                id: 1,
+                startup: 1,
+                startup_name: "EthioPay Solutions",
+                mentor: 1,
+                title: "Weekly Progress Review",
+                description: "Discuss milestones and blockers",
+                schedule_date: "2024-12-15T14:00:00Z",
+                link: "https://meet.google.com/abc-defg",
+              },
+              {
+                id: 2,
+                startup: 2,
+                startup_name: "AgriTech Ethiopia",
+                mentor: 1,
+                title: "Strategy Session",
+                description: "Go-to-market discussion",
+                schedule_date: "2024-12-18T10:00:00Z",
+                link: "https://zoom.us/j/123456789",
+              },
+            ]);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch assigned startups:", error);
@@ -129,6 +158,11 @@ function MentorDashboard() {
   const handleBackToStartups = () => {
     setSelectedStartup(null);
     setViewMode("list");
+  };
+
+  const getStartupName = (startupId: number) => {
+    const startup = assignedStartups.find((s) => s.id === startupId);
+    return startup ? startup.name : "Unknown Startup";
   };
 
   const upcomingMeetings = [
@@ -238,10 +272,6 @@ function MentorDashboard() {
                     Guide and support your assigned startups
                   </p>
                 </div>
-                <Button className="bg-aau-blue hover:bg-aau-blue/90">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Schedule Meeting
-                </Button>
               </div>
             </div>
           </section>
@@ -441,51 +471,73 @@ function MentorDashboard() {
                             Your scheduled mentoring sessions
                           </CardDescription>
                         </div>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href="/bookings">
-                            View Calendar
-                            <ArrowUpRight className="h-4 w-4 ml-1" />
-                          </Link>
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href="/bookings">
+                              View Calendar
+                              <ArrowUpRight className="h-4 w-4 ml-1" />
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {upcomingMeetings.map((meeting) => (
-                          <div
-                            key={meeting.id}
-                            className="flex items-center justify-between p-4 border rounded-lg"
-                          >
-                            <div className="flex items-center space-x-4">
-                              <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
-                                <Calendar className="h-5 w-5 text-aau-blue" />
-                              </div>
-                              <div>
-                                <h4 className="font-medium">
-                                  {meeting.startup}
-                                </h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {meeting.type} with {meeting.founder}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {new Date(meeting.date).toLocaleDateString()}{" "}
-                                  at {meeting.time} • {meeting.location}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Button variant="outline" size="sm">
-                                Reschedule
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="bg-aau-blue hover:bg-aau-blue/90"
-                              >
-                                Join Meeting
-                              </Button>
-                            </div>
+                        {meetings.length === 0 ? (
+                          <div className="text-center py-8">
+                            <p className="text-muted-foreground">
+                              No meetings scheduled yet.
+                            </p>
                           </div>
-                        ))}
+                        ) : (
+                          meetings.map((meeting) => (
+                            <div
+                              key={meeting.id}
+                              className="flex items-center justify-between p-4 border rounded-lg"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <div className="h-10 w-10 bg-aau-blue/10 rounded-full flex items-center justify-center">
+                                  <Calendar className="h-5 w-5 text-aau-blue" />
+                                </div>
+                                <div>
+                                  <h4 className="font-medium">
+                                    {meeting.title}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {getStartupName(meeting.startup)}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {new Date(
+                                      meeting.schedule_date
+                                    ).toLocaleDateString()}{" "}
+                                    at{" "}
+                                    {new Date(
+                                      meeting.schedule_date
+                                    ).toLocaleTimeString()}
+                                  </p>
+                                  {meeting.description && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {meeting.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {meeting.link && (
+                                  <Button
+                                    size="sm"
+                                    className="bg-aau-blue hover:bg-aau-blue/90"
+                                    onClick={() =>
+                                      window.open(meeting.link, "_blank")
+                                    }
+                                  >
+                                    Join Meeting
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </CardContent>
                   </Card>
