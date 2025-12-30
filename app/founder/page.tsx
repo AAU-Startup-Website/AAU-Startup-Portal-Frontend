@@ -66,7 +66,6 @@ import {
   updateMeeting,
   deleteMeeting,
   getProfile,
-  getMentors,
 } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
@@ -93,7 +92,6 @@ function FounderDashboard() {
   const [createMeetingDialogOpen, setCreateMeetingDialogOpen] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [mentors, setMentors] = useState<any[]>([]);
   const [newMeeting, setNewMeeting] = useState({
     startup: "",
     mentor: "",
@@ -168,18 +166,6 @@ function FounderDashboard() {
             console.error("Failed to fetch meetings:", meetingsError);
             // Set empty meetings array - UI will handle gracefully
             setMeetings([]);
-          }
-
-          // Fetch mentors
-          console.log("Fetching mentors...");
-          try {
-            const mentorsData = await getMentors(token);
-            console.log("Mentors data:", mentorsData);
-            setMentors(mentorsData);
-          } catch (mentorsError) {
-            console.error("Failed to fetch mentors:", mentorsError);
-            // Set empty mentors array - UI will handle gracefully
-            setMentors([]);
           }
         } else {
           console.log("No token found");
@@ -1171,23 +1157,14 @@ function FounderDashboard() {
             </div>
             <div>
               <Label htmlFor="mentor">Mentor</Label>
-              <Select
+              <Input
+                id="mentor"
                 value={newMeeting.mentor}
-                onValueChange={(value) =>
-                  setNewMeeting({ ...newMeeting, mentor: value })
+                onChange={(e) =>
+                  setNewMeeting({ ...newMeeting, mentor: e.target.value })
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a mentor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mentors.map((mentor) => (
-                    <SelectItem key={mentor.id} value={mentor.id.toString()}>
-                      {mentor.username}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Enter mentor name or ID"
+              />
             </div>
             <div>
               <Label htmlFor="title">Meeting Title</Label>

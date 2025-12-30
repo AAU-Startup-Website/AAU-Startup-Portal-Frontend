@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback, useEffect } from "react";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +29,8 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { getMatchedUsers } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 
 interface CoFounder {
   id: string;
@@ -47,8 +49,6 @@ export default function CoFoundersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
-  const [lookingForFilter, setLookingForFilter] = useState("");
   const [totalCount, setTotalCount] = useState(0);
 
   const fetchCoFounders = useCallback(async () => {
@@ -56,20 +56,40 @@ export default function CoFoundersPage() {
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams();
-      if (searchTerm) params.append("search", searchTerm);
-      if (locationFilter) params.append("location", locationFilter);
-      if (lookingForFilter) params.append("looking_for", lookingForFilter);
-
-      const response = await fetch(`/api/cofounders?${params.toString()}`);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch cofounders: ${response.statusText}`);
+      const token = getToken();
+      if (!token) {
+        throw new Error("No authentication token found");
       }
 
-      const result = await response.json();
-      setCoFounders(result.data || []);
-      setTotalCount(result.count || 0);
+      const result = await getMatchedUsers(token, searchTerm || undefined);
+
+      // Map API response to CoFounder interface
+      const mappedData = result.map((user: any) => {
+        // Ensure skills is always an array
+        let skillsArray: string[] = [];
+        if (Array.isArray(user.profile?.skills)) {
+          skillsArray = user.profile.skills;
+        } else if (typeof user.profile?.skills === "string") {
+          // If skills is a string, split by comma or space
+          skillsArray = user.profile.skills
+            .split(/[, ]+/)
+            .filter((s) => s.trim());
+        }
+
+        return {
+          id: user.id.toString(),
+          name: user.username,
+          role: user.profile?.role || "Co-founder",
+          bio: user.profile?.bio || "",
+          location: user.profile?.location,
+          skills: skillsArray,
+          experience: user.profile?.experience,
+          looking_for: user.profile?.looking_for,
+        };
+      });
+
+      setCoFounders(mappedData);
+      setTotalCount(result.length);
     } catch (err) {
       console.error("Error fetching cofounders:", err);
       setError(
@@ -78,24 +98,26 @@ export default function CoFoundersPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, locationFilter, lookingForFilter]);
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchCoFounders();
   }, [fetchCoFounders]);
 
-  const handleSearch = () => {
-    fetchCoFounders();
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchCoFounders();
+    }, 500); // Debounce search by 500ms
 
-  const handleFilterChange = () => {
+    return () => clearTimeout(timer);
+  }, [searchTerm, fetchCoFounders]);
+
+  const handleSearch = () => {
     fetchCoFounders();
   };
 
   const clearFilters = () => {
     setSearchTerm("");
-    setLocationFilter("");
-    setLookingForFilter("");
     fetchCoFounders();
   };
 
@@ -125,44 +147,6 @@ export default function CoFoundersPage() {
                     onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                   />
                 </div>
-                <Select
-                  value={locationFilter}
-                  onValueChange={(value) => {
-                    setLocationFilter(value);
-                    handleFilterChange();
-                  }}
-                >
-                  <SelectTrigger className="w-full md:w-48 h-12">
-                    <SelectValue placeholder="Location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Addis Ababa">Addis Ababa</SelectItem>
-                    <SelectItem value="Dire Dawa">Dire Dawa</SelectItem>
-                    <SelectItem value="Bahir Dar">Bahir Dar</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={lookingForFilter}
-                  onValueChange={(value) => {
-                    setLookingForFilter(value);
-                    handleFilterChange();
-                  }}
-                >
-                  <SelectTrigger className="w-full md:w-48 h-12">
-                    <SelectValue placeholder="Looking For" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Technical Co-founder">
-                      Technical Co-founder
-                    </SelectItem>
-                    <SelectItem value="Business Co-founder">
-                      Business Co-founder
-                    </SelectItem>
-                    <SelectItem value="Marketing Co-founder">
-                      Marketing Co-founder
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
                 <Button
                   className="h-12 px-6 bg-aau-blue hover:bg-aau-blue/90"
                   onClick={handleSearch}
@@ -170,7 +154,7 @@ export default function CoFoundersPage() {
                   <Filter className="h-4 w-4 mr-2" />
                   Search
                 </Button>
-                {(searchTerm || locationFilter || lookingForFilter) && (
+                {searchTerm && (
                   <Button
                     variant="outline"
                     className="h-12 px-6"
@@ -272,19 +256,21 @@ export default function CoFoundersPage() {
                         </div>
                       )}
 
-                      {person.skills && person.skills.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {person.skills.map((skill) => (
-                            <Badge
-                              key={skill}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {skill}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
+                      {person.skills &&
+                        Array.isArray(person.skills) &&
+                        person.skills.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {person.skills.map((skill) => (
+                              <Badge
+                                key={skill}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
 
                       <div className="pt-2 border-t">
                         {person.looking_for && (

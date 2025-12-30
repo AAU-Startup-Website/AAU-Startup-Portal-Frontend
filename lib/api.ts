@@ -444,24 +444,25 @@ export const deleteMeeting = async (token: string, meetingId: number) => {
   return true;
 };
 
-// Get mentors (users with role "mentor")
-export const getMentors = async (token: string) => {
-  console.log("Making API call to get mentors");
-  const response = await fetch(`${API_BASE_URL}/users/users/`, {
+// Get matched users for co-founder matching
+export const getMatchedUsers = async (token: string, search?: string) => {
+  console.log("Making API call to get matched users");
+  const params = new URLSearchParams();
+  if (search) params.append("search", search);
+
+  const url = `${API_BASE_URL}/users/match/?${params.toString()}`;
+  const response = await fetch(url, {
     headers: {
       Authorization: `Token ${token}`,
     },
   });
-  console.log("Get mentors response status:", response.status);
+  console.log("Get matched users response status:", response.status);
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("Get mentors API error:", errorText);
-    throw new Error("Failed to fetch mentors");
+    console.error("Get matched users API error:", errorText);
+    throw new Error("Failed to fetch matched users");
   }
   const data = await response.json();
-  console.log("Get mentors response data:", data);
-  // Filter users with role "mentor"
-  const mentors = data.filter((user: any) => user.profile?.role === "mentor");
-  console.log("Filtered mentors:", mentors);
-  return mentors;
+  console.log("Get matched users response data:", data);
+  return data;
 };
