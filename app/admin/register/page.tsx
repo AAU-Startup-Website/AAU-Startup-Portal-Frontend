@@ -18,15 +18,12 @@ import {
   Loader2,
   AlertCircle,
   ArrowRight,
-  Briefcase,
   Users,
-  Trophy,
-  Shield,
-  ArrowLeft, // Import for the back button
+  ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
 
-export default function RegisterPage() {
+export default function AdminRegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,9 +32,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"founder" | "mentor" | "investor">(
-    "founder"
-  );
 
   const router = useRouter();
   const { signUp } = useAuth();
@@ -60,7 +54,7 @@ export default function RegisterPage() {
         password,
         firstName: username,
         lastName: "",
-        role: role,
+        role: "admin",
         department,
       });
       router.push("/login");
@@ -76,21 +70,6 @@ export default function RegisterPage() {
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const getRoleIcon = (r: string) => {
-    switch (r) {
-      case "founder":
-        return <Briefcase className="w-3 h-3 mb-1" />;
-      case "mentor":
-        return <GraduationCap className="w-3 h-3 mb-1" />;
-      case "investor":
-        return <Trophy className="w-3 h-3 mb-1" />;
-      case "admin":
-        return <Shield className="w-3 h-3 mb-1" />;
-      default:
-        return <User className="w-3 h-3 mb-1" />;
     }
   };
 
@@ -204,10 +183,10 @@ export default function RegisterPage() {
             {/* Added mx-auto and flex-grow */}
             <div className="space-y-1">
               <h2 className="text-2xl font-bold text-[#005081] tracking-tight">
-                Create Account
+                Admin Registration
               </h2>
               <p className="text-[#7D818B] text-sm">
-                Enter your institutional details to access the portal.
+                Create an admin account for the AAU Startups Portal.
               </p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -234,7 +213,7 @@ export default function RegisterPage() {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7D818B] group-focus-within:text-[#005081] transition-colors" />
                     <Input
                       id="username"
-                      placeholder="johndoe_251"
+                      placeholder="johndoe_admin"
                       className="pl-9 h-10 bg-slate-50 border-[#CAD6DE] focus:border-[#005081] focus:ring-[#005081] transition-all"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
@@ -255,7 +234,7 @@ export default function RegisterPage() {
                     <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7D818B] group-focus-within:text-[#005081] transition-colors" />
                     <Input
                       id="department"
-                      placeholder="e.g. CS"
+                      placeholder="e.g. Admin"
                       className="pl-9 h-10 bg-slate-50 border-[#CAD6DE] focus:border-[#005081] focus:ring-[#005081] transition-all"
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
@@ -278,7 +257,7 @@ export default function RegisterPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="name@aau.edu.et"
+                    placeholder="admin@aau.edu.et"
                     className="pl-9 h-10 bg-slate-50 border-[#CAD6DE] focus:border-[#005081] focus:ring-[#005081] transition-all"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -315,33 +294,6 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Role Selection - Compact Buttons */}
-              <div className="space-y-2 pt-1">
-                <Label className="text-xs font-bold text-[#21282D] uppercase tracking-wider">
-                  I am a
-                </Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {["founder", "mentor", "investor"].map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setRole(r as any)}
-                      className={`
-                        flex flex-col items-center justify-center py-2 px-1 rounded-lg border text-[10px] font-bold uppercase transition-all duration-200
-                        ${
-                          role === r
-                            ? "bg-[#005081] border-[#005081] text-white shadow-md scale-[1.02]"
-                            : "bg-white border-[#CAD6DE] text-[#7D818B] hover:border-[#005081] hover:text-[#005081]"
-                        }
-                      `}
-                    >
-                      {getRoleIcon(r)}
-                      {r}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Submit */}
               <Button
                 type="submit"
@@ -351,11 +303,11 @@ export default function RegisterPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Initializing...
+                    Creating Admin Account...
                   </>
                 ) : (
                   <span className="flex items-center">
-                    CREATE ACCOUNT{" "}
+                    CREATE ADMIN ACCOUNT{" "}
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </span>
                 )}
