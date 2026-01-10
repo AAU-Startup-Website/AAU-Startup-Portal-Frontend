@@ -23,29 +23,8 @@ import {
   Trophy,
   Shield,
   ArrowLeft,
-  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
-
-const DEPARTMENTS = [
-  "Computer Science (CS)",
-  "Information Systems (IS)",
-  "Software Engineering",
-  "Electrical and Computer Engineering",
-  "Mechanical Engineering",
-  "Civil Engineering",
-  "Chemical Engineering",
-  "Biomedical Engineering",
-  "Management",
-  "Economics",
-  "Accounting and Finance",
-  "Marketing Management",
-  "Architecture",
-  "Pharmacy",
-  "Public Health",
-  "Medicine",
-  "Other",
-];
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -54,8 +33,7 @@ export default function RegisterPage() {
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [selectedDept, setSelectedDept] = useState("");
-  const [customDept, setCustomDept] = useState("");
+  const [department, setDepartment] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"founder" | "mentor" | "investor">(
     "founder"
@@ -69,11 +47,8 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError("");
 
-    const finalDepartment =
-      selectedDept === "Other" ? customDept : selectedDept;
-
-    if (!finalDepartment) {
-      setError("Please select your department.");
+    if (!department) {
+      setError("Please enter your department.");
       setIsLoading(false);
       return;
     }
@@ -92,7 +67,7 @@ export default function RegisterPage() {
         firstName: username,
         lastName: "",
         role: role,
-        department: finalDepartment,
+        department,
       });
       router.push("/login");
     } catch (err: any) {
@@ -268,7 +243,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  {/* Department Dropdown */}
+                  {/* Department */}
                   <div className="space-y-1.5">
                     <Label
                       htmlFor="department"
@@ -277,50 +252,18 @@ export default function RegisterPage() {
                       Department
                     </Label>
                     <div className="relative group">
-                      <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7D818B] group-focus-within:text-[#005081] transition-colors pointer-events-none" />
-                      <select
-                        id="department"
-                        className="w-full pl-9 pr-8 h-10 bg-slate-50 border border-[#CAD6DE] rounded-md text-sm focus:border-[#005081] focus:ring-[#005081] transition-all appearance-none cursor-pointer"
-                        value={selectedDept}
-                        onChange={(e) => setSelectedDept(e.target.value)}
-                        required
-                      >
-                        <option value="" disabled>
-                          Select Department
-                        </option>
-                        {DEPARTMENTS.map((dept) => (
-                          <option key={dept} value={dept}>
-                            {dept}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7D818B] pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Conditional "Other" Input */}
-                {selectedDept === "Other" && (
-                  <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <Label
-                      htmlFor="customDept"
-                      className="text-xs font-bold text-[#21282D] uppercase tracking-wider"
-                    >
-                      Specify Department
-                    </Label>
-                    <div className="relative group">
                       <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7D818B] group-focus-within:text-[#005081] transition-colors" />
                       <Input
-                        id="customDept"
-                        placeholder="Enter your department name"
+                        id="department"
+                        placeholder="e.g. CS"
                         className="pl-9 h-10 bg-slate-50 border-[#CAD6DE] focus:border-[#005081] focus:ring-[#005081] transition-all"
-                        value={customDept}
-                        onChange={(e) => setCustomDept(e.target.value)}
-                        required={selectedDept === "Other"}
+                        value={department}
+                        onChange={(e) => setDepartment(e.target.value)}
+                        required
                       />
                     </div>
                   </div>
-                )}
+                </div>
 
                 {/* Email */}
                 <div className="space-y-1.5">

@@ -75,48 +75,6 @@ export default function AdminRegisterPage() {
 
   return (
     <div className="h-screen w-full flex flex-col bg-white overflow-hidden">
-      {/* Consistent Header (Matches Landing Page) */}
-      <header className="flex-none h-20 border-b border-[#CAD6DE] bg-white px-6 lg:px-12 flex items-center justify-between z-20">
-        <Link href="/" className="flex items-center space-x-4 group">
-          <div className="relative overflow-hidden rounded-full p-0.5">
-            <img
-              src="/logo.png"
-              alt="AAU Startup Center Logo"
-              className="h-12 w-auto object-contain"
-            />
-          </div>
-          <div className="flex flex-col justify-center pl-4 border-l-2 border-[#CAD6DE] h-10">
-            <div className="text-[#005081] text-[16px] font-bold leading-none mb-1 group-hover:text-[#015384] transition-colors">
-              ኤኤዩ ስታርታፕ ማዕከል
-            </div>
-            <div className="text-[#E63946] text-[12px] font-bold tracking-[1.5px] leading-none">
-              AAU STARTUP CENTER
-            </div>
-          </div>
-        </Link>
-
-        {/* Back button and Sign In link */}
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="text-[#7D818B] hover:text-[#005081] hover:bg-[#CAD6DE]/20 flex items-center gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <span className="text-sm font-medium text-[#7D818B]">
-            Already a member?{" "}
-            <Link
-              href="/login"
-              className="text-[#005081] hover:underline font-bold ml-1"
-            >
-              Sign In
-            </Link>
-          </span>
-        </div>
-      </header>
-
       {/* Main Content Split */}
       <div className="flex-1 flex relative">
         {/* Left Side: Image & Quote (Visual) */}
