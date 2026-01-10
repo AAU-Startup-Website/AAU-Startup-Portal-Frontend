@@ -32,6 +32,13 @@ import {
 import { getMatchedUsers } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
+// --- AAU Color Palette Constants for reference ---
+// Primary: #005081
+// Secondary Blues: #015384, #014F8A, #4378A0
+// Backgrounds: #FFFFFF, #CAD6DE
+// Text: #21282D, #7D818B
+// Accent: #E63946
+
 interface CoFounder {
   id: string;
   name: string;
@@ -73,7 +80,7 @@ export default function CoFoundersPage() {
           // If skills is a string, split by comma or space
           skillsArray = user.profile.skills
             .split(/[, ]+/)
-            .filter((s) => s.trim());
+            .filter((s: string) => s.trim());
         }
 
         return {
@@ -123,13 +130,15 @@ export default function CoFoundersPage() {
 
   return (
     <AuthGuard requiredRoles={["founder", "mentor"]}>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white text-[#21282D]">
         {/* Header */}
-        <section className="bg-muted/30 py-16 px-4">
+        <section className="bg-[#CAD6DE]/30 py-16 px-4 border-b border-[#CAD6DE]">
           <div className="container mx-auto max-w-7xl">
             <div className="text-center space-y-4 mb-8">
-              <h1 className="text-4xl font-bold">Find Your Co-Founder</h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <h1 className="text-4xl font-bold text-[#005081]">
+                Find Your Co-Founder
+              </h1>
+              <p className="text-xl text-[#7D818B] max-w-2xl mx-auto">
                 Connect with talented individuals who share your entrepreneurial
                 vision
               </p>
@@ -141,14 +150,14 @@ export default function CoFoundersPage() {
                 <div className="flex-1">
                   <Input
                     placeholder="Search by skills, experience, or interests..."
-                    className="h-12"
+                    className="h-12 border-[#7D818B]/30 focus:border-[#005081]"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                   />
                 </div>
                 <Button
-                  className="h-12 px-6 bg-aau-blue hover:bg-aau-blue/90"
+                  className="h-12 px-6 bg-[#005081] hover:bg-[#015384] text-white"
                   onClick={handleSearch}
                 >
                   <Filter className="h-4 w-4 mr-2" />
@@ -157,7 +166,7 @@ export default function CoFoundersPage() {
                 {searchTerm && (
                   <Button
                     variant="outline"
-                    className="h-12 px-6"
+                    className="h-12 px-6 border-[#005081] text-[#005081] hover:bg-[#005081]/10"
                     onClick={clearFilters}
                   >
                     Clear Filters
@@ -173,21 +182,28 @@ export default function CoFoundersPage() {
           <div className="container mx-auto max-w-7xl">
             <div className="flex justify-between items-center mb-8">
               <div>
-                <h2 className="text-2xl font-bold">Available Co-Founders</h2>
-                <p className="text-muted-foreground">
+                <h2 className="text-2xl font-bold text-[#005081]">
+                  Available Co-Founders
+                </h2>
+                <p className="text-[#7D818B]">
                   {loading
                     ? "Loading..."
                     : `${totalCount} potential matches found`}
                 </p>
               </div>
-              <Button variant="outline">Post Your Profile</Button>
+              <Button
+                variant="outline"
+                className="border-[#005081] text-[#005081] hover:bg-[#005081]/10"
+              >
+                Post Your Profile
+              </Button>
             </div>
 
             {/* Loading State */}
             {loading && (
               <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-aau-blue" />
-                <span className="ml-2 text-muted-foreground">
+                <Loader2 className="h-8 w-8 animate-spin text-[#005081]" />
+                <span className="ml-2 text-[#7D818B]">
                   Loading cofounders...
                 </span>
               </div>
@@ -196,8 +212,8 @@ export default function CoFoundersPage() {
             {/* Error State */}
             {error && (
               <div className="flex justify-center items-center py-12">
-                <AlertCircle className="h-8 w-8 text-red-500" />
-                <span className="ml-2 text-red-500">{error}</span>
+                <AlertCircle className="h-8 w-8 text-[#E63946]" />
+                <span className="ml-2 text-[#E63946]">{error}</span>
               </div>
             )}
 
@@ -207,7 +223,7 @@ export default function CoFoundersPage() {
                 {coFounders.map((person) => (
                   <Card
                     key={person.id}
-                    className="hover:shadow-lg transition-shadow"
+                    className="hover:shadow-lg transition-shadow border-[#CAD6DE]"
                   >
                     <CardHeader>
                       <div className="flex items-start space-x-4">
@@ -216,23 +232,27 @@ export default function CoFoundersPage() {
                             src={person.image_url || "/placeholder.svg"}
                             alt={person.name}
                           />
-                          <AvatarFallback className="bg-aau-blue text-white">
+                          <AvatarFallback className="bg-[#005081] text-white">
                             {person.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                              ? person.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .toUpperCase()
+                                  .slice(0, 2)
+                              : "CF"}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg">
+                          <CardTitle className="text-lg text-[#21282D]">
                             {person.name}
                           </CardTitle>
-                          <CardDescription className="flex items-center mt-1">
+                          <CardDescription className="flex items-center mt-1 text-[#7D818B]">
                             <Briefcase className="h-3 w-3 mr-1" />
                             {person.role}
                           </CardDescription>
                           {person.location && (
-                            <CardDescription className="flex items-center mt-1">
+                            <CardDescription className="flex items-center mt-1 text-[#7D818B]">
                               <MapPin className="h-3 w-3 mr-1" />
                               {person.location}
                             </CardDescription>
@@ -242,14 +262,14 @@ export default function CoFoundersPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {person.bio && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-[#7D818B] line-clamp-3">
                           {person.bio}
                         </p>
                       )}
 
                       {person.experience && (
                         <div>
-                          <div className="flex items-center text-sm text-muted-foreground mb-2">
+                          <div className="flex items-center text-sm text-[#7D818B] mb-2">
                             <GraduationCap className="h-3 w-3 mr-1" />
                             {person.experience} experience
                           </div>
@@ -264,7 +284,7 @@ export default function CoFoundersPage() {
                               <Badge
                                 key={skill}
                                 variant="secondary"
-                                className="text-xs"
+                                className="text-xs bg-[#CAD6DE] text-[#005081] hover:bg-[#CAD6DE]/80"
                               >
                                 {skill}
                               </Badge>
@@ -272,13 +292,16 @@ export default function CoFoundersPage() {
                           </div>
                         )}
 
-                      <div className="pt-2 border-t">
+                      <div className="pt-2 border-t border-[#CAD6DE]">
                         {person.looking_for && (
-                          <p className="text-sm font-medium mb-3">
-                            Looking for: {person.looking_for}
+                          <p className="text-sm font-medium mb-3 text-[#21282D]">
+                            Looking for:{" "}
+                            <span className="text-[#7D818B] font-normal">
+                              {person.looking_for}
+                            </span>
                           </p>
                         )}
-                        <Button className="w-full bg-aau-blue hover:bg-aau-blue/90">
+                        <Button className="w-full bg-[#005081] hover:bg-[#015384] text-white transition-colors">
                           <MessageCircle className="h-4 w-4 mr-2" />
                           Connect
                         </Button>
@@ -292,7 +315,7 @@ export default function CoFoundersPage() {
             {/* Empty State */}
             {!loading && !error && coFounders.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">
+                <p className="text-[#7D818B]">
                   No cofounders found matching your criteria.
                 </p>
               </div>
@@ -300,7 +323,11 @@ export default function CoFoundersPage() {
 
             {/* Load More */}
             <div className="text-center mt-12">
-              <Button variant="outline" size="lg">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-[#005081] text-[#005081] hover:bg-[#005081]/10"
+              >
                 Load More Profiles
               </Button>
             </div>

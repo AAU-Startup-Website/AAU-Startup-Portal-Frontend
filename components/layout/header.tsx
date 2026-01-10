@@ -131,13 +131,13 @@ export function Header() {
 
           <div className="hidden md:flex flex-col justify-center pl-4 border-l-2 border-slate-200 h-10">
             {/* Amharic Text - PRIMARY BLUE */}
-            <div className="text-primary text-[19px] tracking-[0.5px] leading-none mb-1 group-hover:text-blue-700 transition-colors duration-300">
-              ኤኤዩ ስታርታፕ ማዕከል
+            <div className="text-primary text-[16px] tracking-[0.5px] leading-none mb-1 group-hover:text-blue-700 transition-colors duration-300">
+              አዲስ አበባ ዩኒቨርሲት ስታርታፕስ ማዕከል
             </div>
 
             {/* English Text - RED (#E63946) */}
-            <div className="text-[#E63946]  text-[15px] tracking-[1.5px] leading-none group-hover:text-red-700 transition-colors duration-300">
-              AAU STARTUP CENTER
+            <div className="text-[#E63946]  text-[14px] tracking-[1.5px] leading-none group-hover:text-red-700 transition-colors duration-300">
+              ADDIS ABABA UNIVERSITY STARTUPS CENTER
             </div>
           </div>
         </Link>
