@@ -21,7 +21,6 @@ import {
   Briefcase,
   Users,
   Trophy,
-  Shield,
   ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
@@ -320,8 +319,8 @@ export default function RegisterPage() {
                   <Label className="text-xs font-bold text-[#21282D] uppercase tracking-wider">
                     I am a
                   </Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {["founder", "mentor", "investor", "admin"].map((r) => (
+                  <div className="grid grid-cols-3 gap-2">
+                    {["founder", "mentor", "investor"].map((r) => (
                       <button
                         key={r}
                         type="button"
@@ -378,157 +377,6 @@ export default function RegisterPage() {
                 .
               </p>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert className="bg-red-50 border-red-200 text-red-700 py-2">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription className="text-xs ml-2">
-                    {error}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Grid for compact layout */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Username */}
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="username"
-                    className="text-xs font-bold text-[#21282D] uppercase tracking-wider"
-                  >
-                    Username
-                  </Label>
-                  <div className="relative group">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7D818B] group-focus-within:text-[#005081] transition-colors" />
-                    <Input
-                      id="username"
-                      placeholder="johndoe_251"
-                      className="pl-9 h-10 bg-slate-50 border-[#CAD6DE] focus:border-[#005081] focus:ring-[#005081] transition-all"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Department */}
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="department"
-                    className="text-xs font-bold text-[#21282D] uppercase tracking-wider"
-                  >
-                    Department
-                  </Label>
-                  <div className="relative group">
-                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7D818B] group-focus-within:text-[#005081] transition-colors" />
-                    <Input
-                      id="department"
-                      placeholder="e.g. CS"
-                      className="pl-9 h-10 bg-slate-50 border-[#CAD6DE] focus:border-[#005081] focus:ring-[#005081] transition-all"
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="email"
-                  className="text-xs font-bold text-[#21282D] uppercase tracking-wider"
-                >
-                  Official Email
-                </Label>
-                <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7D818B] group-focus-within:text-[#005081] transition-colors" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@aau.edu.et"
-                    className="pl-9 h-10 bg-slate-50 border-[#CAD6DE] focus:border-[#005081] focus:ring-[#005081] transition-all"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="password"
-                  className="text-xs font-bold text-[#21282D] uppercase tracking-wider"
-                >
-                  Password
-                </Label>
-                <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7D818B] group-focus-within:text-[#005081] transition-colors" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    className="pl-9 h-10 bg-slate-50 border-[#CAD6DE] focus:border-[#005081] focus:ring-[#005081] transition-all"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7D818B] hover:text-[#005081]"
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Role Selection - Compact Buttons */}
-              <div className="space-y-2 pt-1">
-                <Label className="text-xs font-bold text-[#21282D] uppercase tracking-wider">
-                  I am a
-                </Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {["founder", "mentor", "investor"].map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setRole(r as any)}
-                      className={`
-                        flex flex-col items-center justify-center py-2 px-1 rounded-lg border text-[10px] font-bold uppercase transition-all duration-200
-                        ${
-                          role === r
-                            ? "bg-[#005081] border-[#005081] text-white shadow-md scale-[1.02]"
-                            : "bg-white border-[#CAD6DE] text-[#7D818B] hover:border-[#005081] hover:text-[#005081]"
-                        }
-                      `}
-                    >
-                      {getRoleIcon(r)}
-                      {r}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Submit */}
-              <Button
-                type="submit"
-                className="w-full h-11 bg-[#005081] hover:bg-[#015384] text-white font-bold tracking-wide shadow-md hover:shadow-lg transition-all mt-4 group"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Initializing...
-                  </>
-                ) : (
-                  <span className="flex items-center">
-                    CREATE ACCOUNT{" "}
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                )}
-              </Button>
-            </form>
           </div>
         </div>
       </div>
