@@ -103,20 +103,28 @@ export default function RegisterPage() {
     <div className="h-screen w-full flex flex-col bg-white overflow-hidden">
       {/* Header */}
       <header className="flex-none h-20 border-b border-[#CAD6DE] bg-white px-6 lg:px-12 flex items-center justify-between z-20">
-        <Link href="/" className="flex items-center space-x-4 group">
-          <div className="relative overflow-hidden rounded-full p-0.5">
+        <Link
+          href="/"
+          className="flex items-center space-x-4 cursor-pointer group"
+        >
+          {/* Static Logo Container (no hover effects) */}
+          <div className="relative overflow-hidden rounded-full border-2 border-transparent transition-all duration-500 p-0.5">
             <img
               src="/logo.png"
               alt="AAU Startup Center Logo"
-              className="h-12 w-auto object-contain"
+              className="h-12 w-auto object-contain transition-transform duration-500 ease-in-out"
             />
           </div>
-          <div className="flex flex-col justify-center pl-4 border-l-2 border-[#CAD6DE] h-10">
-            <div className="text-[#005081] text-[16px] font-bold leading-none mb-1 group-hover:text-[#015384] transition-colors">
-              ኤኤዩ ስታርታፕ ማዕከል
+
+          <div className="hidden md:flex flex-col justify-center pl-4 border-l-2 border-slate-200 h-10">
+            {/* Amharic Text - PRIMARY BLUE */}
+            <div className="text-primary text-[16px] tracking-[0.5px] leading-none mb-1 group-hover:text-blue-700 transition-colors duration-300">
+              አዲስ አበባ ዩኒቨርሲት ስታርታፕስ ማዕከል
             </div>
-            <div className="text-[#E63946] text-[12px] font-bold tracking-[1.5px] leading-none">
-              AAU STARTUP CENTER
+
+            {/* English Text - RED (#E63946) */}
+            <div className="text-[#E63946]  text-[14px] tracking-[1.5px] leading-none group-hover:text-red-700 transition-colors duration-300">
+              ADDIS ABABA UNIVERSITY STARTUPS CENTER
             </div>
           </div>
         </Link>
