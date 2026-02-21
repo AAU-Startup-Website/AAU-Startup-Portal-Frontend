@@ -34,7 +34,6 @@ import {
 
 const publicNavItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/apply", label: "Apply", icon: FileText },
   { href: "/startups", label: "Startups", icon: Briefcase },
   { href: "/stories", label: "Stories", icon: Trophy },
   { href: "/events", label: "Events", icon: Calendar },
