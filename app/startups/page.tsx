@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import AuthGuard from "@/components/auth/withRoleAuth";
+import { AuthGuard } from "@/components/auth/auth-guard";
 
 export default function StartupsPage() {
   return (

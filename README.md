@@ -269,11 +269,13 @@ pnpm build
 The project includes Docker configuration for easy deployment.
 
 #### Prerequisites
+
 - Docker and Docker Compose installed
 
 #### Quick Start with Docker
 
 1. **Build and run the application**
+
    ```bash
    docker-compose up -d --build
    ```
