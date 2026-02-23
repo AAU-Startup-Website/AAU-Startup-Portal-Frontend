@@ -16,6 +16,8 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Hide the Next.js dev indicator (N logo) in bottom-left during development
+  devIndicators: false,
 }
 
 export default nextConfig

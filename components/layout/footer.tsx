@@ -51,7 +51,7 @@ export function Footer() {
                 Apply Now
               </Link>
               <Link
-                href="/startups"
+                href="/startups/browse"
                 className="text-sm text-[#7D818B] hover:text-[#005081] hover:underline transition-all w-fit"
               >
                 Browse Startups
@@ -63,7 +63,7 @@ export function Footer() {
                 Resources
               </Link>
               <Link
-                href="/events"
+                href="/events/browse"
                 className="text-sm text-[#7D818B] hover:text-[#005081] hover:underline transition-all w-fit"
               >
                 Events

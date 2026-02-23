@@ -177,9 +177,10 @@ async function getStartup(id: string) {
 export default async function StartupProfilePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const startup = await getStartup(params.id);
+  const { id } = await params;
+  const startup = await getStartup(id);
 
   if (!startup) {
     notFound();
@@ -220,7 +221,7 @@ export default async function StartupProfilePage({
               asChild
               className="bg-white/95 hover:bg-white text-primary border-none shadow-sm font-semibold"
             >
-              <Link href="/startups">
+              <Link href="/startups/browse">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Directory
               </Link>

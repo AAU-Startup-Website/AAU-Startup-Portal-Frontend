@@ -190,7 +190,7 @@ function InvestorDashboard() {
               </p>
             </div>
             <Button className="bg-aau-blue hover:bg-aau-blue/90" asChild>
-              <Link href="/startups">
+              <Link href="/startups/browse">
                 <Search className="h-4 w-4 mr-2" />
                 Browse All Startups
               </Link>
@@ -259,7 +259,7 @@ function InvestorDashboard() {
                     Investment Opportunities
                   </h2>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="/startups">
+                    <Link href="/startups/browse">
                       View All
                       <ArrowUpRight className="h-4 w-4 ml-1" />
                     </Link>
@@ -483,7 +483,7 @@ function InvestorDashboard() {
                       </CardDescription>
                     </div>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href="/events">
+                      <Link href="/events/browse">
                         View All Events
                         <ArrowUpRight className="h-4 w-4 ml-1" />
                       </Link>
@@ -553,7 +553,7 @@ function InvestorDashboard() {
                       className="bg-aau-blue hover:bg-aau-blue/90"
                       asChild
                     >
-                      <Link href="/startups">Discover Startups</Link>
+                      <Link href="/startups/browse">Discover Startups</Link>
                     </Button>
                   </div>
                 </CardContent>

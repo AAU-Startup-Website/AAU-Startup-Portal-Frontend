@@ -13,10 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter, Trophy } from "lucide-react";
-import Link from "next/link";
+import { Search, Filter, Calendar } from "lucide-react";
 
-export default function StoriesPage() {
+export default function BrowseEventsPage() {
   return (
     <div className="min-h-screen bg-white text-[#21282D] font-sans">
       {/* Header Section */}
@@ -24,11 +23,11 @@ export default function StoriesPage() {
         <div className="container mx-auto max-w-7xl">
           <div className="text-center space-y-4 mb-8">
             <h1 className="text-4xl font-bold text-[#005081] tracking-tight">
-              Success Stories
+              Explore Events
             </h1>
             <p className="text-xl text-[#7D818B] max-w-2xl mx-auto">
-              Discover how AAU students and alumni are transforming industries
-              and building the future of Ethiopia.
+              Discover pitch events, networking sessions, and workshops from
+              AAU Startups Center. Connect with the innovation community.
             </p>
           </div>
 
@@ -38,7 +37,7 @@ export default function StoriesPage() {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-[#7D818B]" />
                 <Input
-                  placeholder="Search success stories..."
+                  placeholder="Search events by title, location, or type..."
                   className="pl-10 h-12 border-[#005081]/20 focus-visible:ring-[#005081]"
                 />
               </div>
@@ -57,22 +56,22 @@ export default function StoriesPage() {
           <div className="flex justify-between items-center mb-8">
             <div>
               <h2 className="text-2xl font-bold text-[#21282D]">
-                Success Stories
+                Upcoming Events
               </h2>
               <p className="text-[#7D818B]">
-                Inspiring journeys from our entrepreneur community
+                Pitch events, workshops, and networking opportunities
               </p>
             </div>
             <Select>
               <SelectTrigger className="w-48 border-[#CAD6DE]">
-                <SelectValue placeholder="Filter by category" />
+                <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="fintech">FinTech</SelectItem>
-                <SelectItem value="healthtech">HealthTech</SelectItem>
-                <SelectItem value="edtech">EdTech</SelectItem>
-                <SelectItem value="agritech">AgriTech</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="pitch">Pitch Event</SelectItem>
+                <SelectItem value="networking">Networking</SelectItem>
+                <SelectItem value="workshop">Workshop</SelectItem>
+                <SelectItem value="demo">Demo Day</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -82,24 +81,17 @@ export default function StoriesPage() {
             <CardContent className="py-16 px-8">
               <div className="flex flex-col items-center text-center space-y-6">
                 <div className="h-20 w-20 rounded-full bg-[#005081]/10 flex items-center justify-center">
-                  <Trophy className="h-10 w-10 text-[#005081]" />
+                  <Calendar className="h-10 w-10 text-[#005081]" />
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-xl font-semibold text-[#21282D]">
-                    There are no success stories yet
+                    There are no events yet
                   </h3>
                   <p className="text-[#7D818B] max-w-md">
-                    Success stories will appear here soon. Check back to read
-                    inspiring journeys from our alumni as they transform ideas
-                    into reality.
+                    Check back later for upcoming pitch days, workshops, and
+                    networking sessions from our community.
                   </p>
                 </div>
-                <Button
-                  asChild
-                  className="bg-[#005081] hover:bg-[#015384] text-white"
-                >
-                  <Link href="/register">Register to Apply</Link>
-                </Button>
               </div>
             </CardContent>
           </Card>

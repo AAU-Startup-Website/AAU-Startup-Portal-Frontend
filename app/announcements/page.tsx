@@ -135,7 +135,21 @@ export default function AnnouncementsPage() {
               <div className="text-center py-10 text-red-600 text-sm">{error}</div>
             )}
             {!loading && !error && announcements.length === 0 && (
-              <div className="text-center py-10 text-muted-foreground text-sm">No announcements yet.</div>
+              <Card className="border-[#CAD6DE] max-w-2xl mx-auto">
+                <CardContent className="py-16 px-8">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Megaphone className="h-10 w-10 text-primary" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold">There are no announcements yet</h3>
+                      <p className="text-muted-foreground max-w-md text-sm">
+                        Announcements will appear here soon. Check back for the latest updates, news, and important information from AAU Startups Portal.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
             {announcements.map((announcement) => (
               <Card

@@ -366,7 +366,7 @@ function ApplyPageContent() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => (window.location.href = "/startups")}
+                  onClick={() => (window.location.href = "/startups/browse")}
                   className="border-primary text-primary hover:bg-primary/5 font-bold px-8"
                 >
                   Browse Startups

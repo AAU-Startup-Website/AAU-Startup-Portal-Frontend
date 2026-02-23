@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthGuard } from "@/components/auth/auth-guard";
 
-export default function StartupsPage() {
+export default function AdminStartupsPage() {
   return (
     <AuthGuard requiredRoles={["admin"]}>
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">

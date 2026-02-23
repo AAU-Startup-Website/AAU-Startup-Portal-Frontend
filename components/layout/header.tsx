@@ -34,9 +34,10 @@ import {
 
 const publicNavItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/startups", label: "Startups", icon: Briefcase },
+  //{ href: "/apply", label: "Apply", icon: FileText },
+  { href: "/startups/browse", label: "Startups", icon: Briefcase },
   { href: "/stories", label: "Stories", icon: Trophy },
-  { href: "/events", label: "Events", icon: Calendar },
+  { href: "/events/browse", label: "Events", icon: Calendar },
   { href: "/library", label: "Library", icon: BookOpen },
   { href: "/announcements", label: "Announcements", icon: Megaphone },
 ];
@@ -59,19 +60,20 @@ const roleBasedNavItems = {
     { href: "/cofounders", label: "Co-founders", icon: Users },
     { href: "/resources", label: "Resources", icon: BookOpen },
     { href: "/messages", label: "Messages", icon: Megaphone },
-    { href: "/events", label: "Events", icon: Calendar },
+    { href: "/events/browse", label: "Events", icon: Calendar },
   ],
   investor: [
     { href: "/investor", label: "My Dashboard", icon: Home },
-    { href: "/startups", label: "Browse Startups", icon: Briefcase },
+    { href: "/startups/browse", label: "Browse Startups", icon: Briefcase },
     { href: "/opportunities", label: "Opportunities", icon: Trophy },
-    { href: "/events", label: "Events", icon: Calendar },
+    { href: "/events/browse", label: "Events", icon: Calendar },
   ],
   admin: [
     { href: "/dashboard", label: "Dashboard", icon: Home },
     { href: "/reviews", label: "Reviews", icon: FileText },
     { href: "/analytics", label: "Analytics", icon: Briefcase },
-    { href: "/startups", label: "Manage Startups", icon: Briefcase },
+    { href: "/admin/startups", label: "Manage Startups", icon: Briefcase },
+    { href: "/admin/events", label: "Manage Events", icon: Calendar },
     { href: "/resources", label: "Manage Resources", icon: BookOpen },
   ],
 };

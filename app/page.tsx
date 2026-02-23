@@ -113,7 +113,7 @@ export default function HomePage() {
                 variant="outline"
                 className="border-2 border-primary text-primary font-bold px-8 w-full sm:w-auto h-11 text-base hover:text-primary"
               >
-                <Link href="/startups">
+                <Link href="/startups/browse">
                   Explore Startups <ExternalLink className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
