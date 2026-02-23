@@ -1,64 +1,102 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, Clock, Search, Filter, Pin, AlertCircle, Info, CheckCircle, Megaphone, RefreshCcw } from "lucide-react"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Calendar,
+  Clock,
+  Search,
+  Filter,
+  Pin,
+  AlertCircle,
+  Info,
+  CheckCircle,
+  Megaphone,
+  RefreshCcw,
+} from "lucide-react";
 
 type Announcement = {
-  id: string
-  title: string
-  content: string
-  created_at: string
-  updated_at: string
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
   // Optional UI derived fields (not in base table) with fallbacks
-  type?: string | null
-  category?: string | null
-  isPinned?: boolean | null
-  author?: string | null
-}
+  type?: string | null;
+  category?: string | null;
+  isPinned?: boolean | null;
+  author?: string | null;
+};
 
 export default function AnnouncementsPage() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedType, setSelectedType] = useState<string>("all");
 
-  const fetchAnnouncements = async () => { // separate function for manual refresh
+  const fetchAnnouncements = async () => {
+    // separate function for manual refresh
     try {
-      setLoading(true)
-      setError(null)
-      const res = await fetch(`/api/announcements`)
-      if (!res.ok) throw new Error(await res.text())
-      const json = await res.json()
-      setAnnouncements(json.data || [])
+      setLoading(true);
+      setError(null);
+      const res = await fetch(`/api/announcements`);
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      setAnnouncements(json.data || []);
     } catch (e: any) {
-      setError(e.message || 'Failed to load announcements')
+      setError(e.message || "Failed to load announcements");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchAnnouncements()
-  }, [])
+    fetchAnnouncements();
+  }, []);
+
+  const filteredAnnouncements = announcements.filter((announcement) => {
+    const matchesSearch =
+      announcement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      announcement.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || announcement.category === selectedCategory;
+    const matchesType =
+      selectedType === "all" || announcement.type === selectedType;
+    return matchesSearch && matchesCategory && matchesType;
+  });
 
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "important":
-        return <AlertCircle className="h-4 w-4" />
+        return <AlertCircle className="h-4 w-4" />;
       case "warning":
-        return <AlertCircle className="h-4 w-4" />
+        return <AlertCircle className="h-4 w-4" />;
       case "info":
-        return <Info className="h-4 w-4" />
+        return <Info className="h-4 w-4" />;
       case "success":
-        return <CheckCircle className="h-4 w-4" />
+        return <CheckCircle className="h-4 w-4" />;
       default:
-        return <Megaphone className="h-4 w-4" />
+        return <Megaphone className="h-4 w-4" />;
     }
-  }
+  };
 
   const getTypeBadge = (type: string) => {
     const variants = {
@@ -67,9 +105,9 @@ export default function AnnouncementsPage() {
       info: "bg-blue-100 text-blue-800",
       success: "bg-green-100 text-green-800",
       announcement: "bg-aau-blue/10 text-aau-blue",
-    }
-    return variants[type as keyof typeof variants] || variants.announcement
-  }
+    };
+    return variants[type as keyof typeof variants] || variants.announcement;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,7 +117,8 @@ export default function AnnouncementsPage() {
           <div className="text-center space-y-4 mb-8">
             <h1 className="text-4xl font-bold">Announcements</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Stay informed with the latest updates, news, and important information from AAU Startups Portal
+              Stay informed with the latest updates, news, and important
+              information from AAU Startups Portal
             </p>
           </div>
 
@@ -88,9 +127,17 @@ export default function AnnouncementsPage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search announcements..." className="pl-10 h-12" />
+                <Input
+                  placeholder="Search announcements..."
+                  className="pl-10 h-12"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-              <Select>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
                 <SelectTrigger className="w-full md:w-48 h-12">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
@@ -103,7 +150,7 @@ export default function AnnouncementsPage() {
                   <SelectItem value="operations">Operations</SelectItem>
                 </SelectContent>
               </Select>
-              <Select>
+              <Select value={selectedType} onValueChange={setSelectedType}>
                 <SelectTrigger className="w-full md:w-48 h-12">
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
@@ -115,7 +162,7 @@ export default function AnnouncementsPage() {
                   <SelectItem value="warning">Warnings</SelectItem>
                 </SelectContent>
               </Select>
-              <Button className="h-12 px-6 bg-aau-blue hover:bg-aau-blue/90">
+              <Button className="h-12 px-6 bg-[#005081] hover:bg-[#015384] text-white transition-colors">
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
@@ -129,11 +176,23 @@ export default function AnnouncementsPage() {
         <div className="container mx-auto max-w-4xl">
           <div className="space-y-6">
             {loading && (
-              <div className="text-center py-10 text-muted-foreground">Loading announcements...</div>
+              <div className="text-center py-10 text-muted-foreground">
+                Loading announcements...
+              </div>
             )}
             {error && !loading && (
-              <div className="text-center py-10 text-red-600 text-sm">{error}</div>
+              <div className="text-center py-10 text-red-600 text-sm">
+                {error}
+              </div>
             )}
+            {!loading &&
+              !error &&
+              filteredAnnouncements.length === 0 &&
+              announcements.length > 0 && (
+                <div className="text-center py-10 text-muted-foreground">
+                  No announcements match your filters.
+                </div>
+              )}
             {!loading && !error && announcements.length === 0 && (
               <Card className="border-[#CAD6DE] max-w-2xl mx-auto">
                 <CardContent className="py-16 px-8">
@@ -142,16 +201,20 @@ export default function AnnouncementsPage() {
                       <Megaphone className="h-10 w-10 text-primary" />
                     </div>
                     <div className="space-y-2">
-                      <h3 className="text-xl font-semibold">There are no announcements yet</h3>
+                      <h3 className="text-xl font-semibold">
+                        There are no announcements yet
+                      </h3>
                       <p className="text-muted-foreground max-w-md text-sm">
-                        Announcements will appear here soon. Check back for the latest updates, news, and important information from AAU Startups Portal.
+                        Announcements will appear here soon. Check back for the
+                        latest updates, news, and important information from AAU
+                        Startups Portal.
                       </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             )}
-            {announcements.map((announcement) => (
+            {filteredAnnouncements.map((announcement) => (
               <Card
                 key={announcement.id}
                 className={`hover:shadow-lg transition-shadow ${
@@ -168,38 +231,55 @@ export default function AnnouncementsPage() {
                             Pinned
                           </Badge>
                         )}
-                        <Badge className={getTypeBadge(announcement.type || 'announcement')}>
-                          {getTypeIcon(announcement.type || 'announcement')}
-                          <span className="ml-1 capitalize">{announcement.type || 'announcement'}</span>
+                        <Badge
+                          className={getTypeBadge(
+                            announcement.type || "announcement",
+                          )}
+                        >
+                          {getTypeIcon(announcement.type || "announcement")}
+                          <span className="ml-1 capitalize">
+                            {announcement.type || "announcement"}
+                          </span>
                         </Badge>
                         {announcement.category && (
-                          <Badge variant="outline">{announcement.category}</Badge>
+                          <Badge variant="outline">
+                            {announcement.category}
+                          </Badge>
                         )}
                       </div>
 
-                      <CardTitle className="text-xl">{announcement.title}</CardTitle>
+                      <CardTitle className="text-xl">
+                        {announcement.title}
+                      </CardTitle>
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
-                          {new Date(announcement.created_at).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
+                          {new Date(announcement.created_at).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
+                          )}
                         </div>
                         <div className="flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
                           {Math.ceil(Math.random() * 5)} min read
                         </div>
-                        {announcement.author && <span>By {announcement.author}</span>}
+                        {announcement.author && (
+                          <span>By {announcement.author}</span>
+                        )}
                       </div>
                     </div>
                   </div>
                 </CardHeader>
 
                 <CardContent>
-                  <CardDescription className="text-base leading-relaxed mb-4">{announcement.content}</CardDescription>
+                  <CardDescription className="text-base leading-relaxed mb-4">
+                    {announcement.content}
+                  </CardDescription>
 
                   <div className="flex items-center justify-between pt-4 border-t">
                     <div className="flex items-center gap-2">
@@ -210,7 +290,10 @@ export default function AnnouncementsPage() {
                         Save
                       </Button>
                     </div>
-                    <Button size="sm" className="bg-aau-blue hover:bg-aau-blue/90">
+                    <Button
+                      size="sm"
+                      className="bg-aau-blue hover:bg-aau-blue/90"
+                    >
                       Read More
                     </Button>
                   </div>
@@ -222,7 +305,12 @@ export default function AnnouncementsPage() {
           {/* Load More */}
           <div className="text-center mt-12">
             <div className="flex justify-center gap-4">
-              <Button variant="outline" size="lg" onClick={fetchAnnouncements} disabled={loading}>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={fetchAnnouncements}
+                disabled={loading}
+              >
                 <RefreshCcw className="h-4 w-4 mr-2" /> Refresh
               </Button>
             </div>
@@ -237,21 +325,29 @@ export default function AnnouncementsPage() {
             <CardHeader>
               <CardTitle className="text-2xl">Never Miss an Update</CardTitle>
               <CardDescription>
-                Subscribe to get important announcements and updates delivered directly to your email
+                Subscribe to get important announcements and updates delivered
+                directly to your email
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Input placeholder="Enter your email address" type="email" className="flex-1" />
-                <Button className="bg-aau-blue hover:bg-aau-blue/90">Subscribe</Button>
+                <Input
+                  placeholder="Enter your email address"
+                  type="email"
+                  className="flex-1"
+                />
+                <Button className="bg-aau-blue hover:bg-aau-blue/90">
+                  Subscribe
+                </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                Get notified about important updates, deadlines, and opportunities. Unsubscribe anytime.
+                Get notified about important updates, deadlines, and
+                opportunities. Unsubscribe anytime.
               </p>
             </CardContent>
           </Card>
         </div>
       </section>
     </div>
-  )
+  );
 }
