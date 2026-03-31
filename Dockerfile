@@ -1,30 +1,27 @@
-# Use Node.js 18 Alpine for smaller image size
+# Use Node.js 18 Alpine
 FROM node:18-alpine
-
-# Install pnpm globally
-RUN npm install -g pnpm
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package.json pnpm-lock.yaml ./
+# Copy package files
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN npm install
 
-# Copy the rest of the application
+# Copy rest of the app
 COPY . .
 
-# Build the application
-RUN pnpm build
+# Build app
+RUN npm run build
 
-# Expose port 3000
+# Expose port
 EXPOSE 3000
 
-# Set environment variables
+# Environment
 ENV PORT=3000
 ENV NODE_ENV=production
 
-# Start the application
-CMD ["pnpm", "start"]
+# Start app
+CMD ["npm", "start"]
