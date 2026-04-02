@@ -11,6 +11,9 @@ import { AuthProvider } from "@/components/auth/auth-context";
 import { Suspense } from "react";
 import "./globals.css";
 
+const analyticsEnabled =
+  process.env.NEXT_PUBLIC_ENABLE_VERCEL_ANALYTICS === "true";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,7 +46,7 @@ export default function RootLayout({
             </Suspense>
           )}
         </AuthProvider>
-        <Analytics />
+        {analyticsEnabled ? <Analytics /> : null}
       </body>
     </html>
   );

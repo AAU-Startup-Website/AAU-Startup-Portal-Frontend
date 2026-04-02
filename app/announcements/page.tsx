@@ -57,7 +57,7 @@ export default function AnnouncementsPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/announcements`);
+      const res = await fetch(`/portal-api/announcements`);
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
       setAnnouncements(json.data || []);
