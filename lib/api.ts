@@ -1,6 +1,6 @@
 // lib/api.ts
 
-export const API_BASE_URL = "https://aau-startup-backend.onrender.com/api";
+export const API_BASE_URL = "http://localhost:8000/api";
 
 // Function to handle user registration
 export const registerUser = async (userData: any) => {

@@ -168,23 +168,57 @@ function AdminDashboard() {
     setShowViewDialog(true);
   };
 
-  // --- MOCK DATA FOR CHARTS ---
-  const applicationData = [
-    { month: "Jan", applications: 45, approved: 12 },
-    { month: "Feb", applications: 52, approved: 15 },
-    { month: "Mar", applications: 48, approved: 18 },
-    { month: "Apr", applications: 61, approved: 22 },
-    { month: "May", applications: 55, approved: 19 },
-    { month: "Jun", applications: 67, approved: 25 },
+  // --- REAL DATA FOR CHARTS derived from ideas ---
+  const SECTOR_COLORS = [
+    "#005081", "#4378A0", "#E63946", "#21282D", "#6B7280",
+    "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#14B8A6",
   ];
 
-  const sectorData = [
-    { name: "FinTech", value: 35, color: "#005081" }, // Primary Blue
-    { name: "HealthTech", value: 25, color: "#4378A0" }, // Secondary Blue
-    { name: "EdTech", value: 20, color: "#CAD6DE" }, // Light Blue
-    { name: "AgriTech", value: 15, color: "#E63946" }, // AAU Red
-    { name: "Other", value: 5, color: "#21282D" }, // Charcoal
-  ];
+  // Monthly application trends — last 6 months
+  const applicationData = (() => {
+    const now = new Date();
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+      return {
+        month: d.toLocaleString("default", { month: "short" }),
+        year: d.getFullYear(),
+        monthIndex: d.getMonth(),
+        applications: 0,
+        approved: 0,
+      };
+    });
+    (ideas as any[]).forEach((idea) => {
+      const d = new Date(idea.created_at);
+      const slot = months.find(
+        (m) => m.monthIndex === d.getMonth() && m.year === d.getFullYear()
+      );
+      if (slot) {
+        slot.applications += 1;
+        if (idea.status === "approved") slot.approved += 1;
+      }
+    });
+    return months.map(({ month, applications, approved }) => ({
+      month,
+      applications,
+      approved,
+    }));
+  })();
+
+  // Sector distribution from real industry field
+  const sectorData = (() => {
+    const counts: Record<string, number> = {};
+    (ideas as any[]).forEach((idea) => {
+      const key = idea.industry?.trim() || "Other";
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value], i) => ({
+        name,
+        value,
+        color: SECTOR_COLORS[i % SECTOR_COLORS.length],
+      }));
+  })();
 
   // --- METRICS CALCULATION ---
   const recentIdeas = ideas
@@ -379,31 +413,37 @@ function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={sectorData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) =>
-                        `${name} ${((percent || 0) * 100).toFixed(0)}%`
-                      }
-                    >
-                      {sectorData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#fff",
-                        borderColor: "#CAD6DE",
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                {sectorData.length === 0 ? (
+                  <div className="flex items-center justify-center h-[300px] text-[#7D818B]">
+                    No sector data yet
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={sectorData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) =>
+                          `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                        }
+                      >
+                        {sectorData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#fff",
+                          borderColor: "#CAD6DE",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
           </div>
