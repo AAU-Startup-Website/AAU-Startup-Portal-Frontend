@@ -100,11 +100,11 @@ export default function AnnouncementsPage() {
 
   const getTypeBadge = (type: string) => {
     const variants = {
-      important: "bg-red-100 text-red-800",
-      warning: "bg-yellow-100 text-yellow-800",
-      info: "bg-blue-100 text-blue-800",
-      success: "bg-green-100 text-green-800",
-      announcement: "bg-aau-blue/10 text-aau-blue",
+      important: "bg-red-100 text-red-800 border-red-200",
+      warning: "bg-yellow-100 text-yellow-800 border-yellow-200",
+      info: "bg-blue-100 text-blue-800 border-blue-200",
+      success: "bg-green-100 text-green-800 border-green-200",
+      announcement: "bg-[#005081]/10 text-[#005081] border-[#005081]/20",
     };
     return variants[type as keyof typeof variants] || variants.announcement;
   };
@@ -217,8 +217,8 @@ export default function AnnouncementsPage() {
             {filteredAnnouncements.map((announcement) => (
               <Card
                 key={announcement.id}
-                className={`hover:shadow-lg transition-shadow ${
-                  announcement.isPinned ? "border-aau-gold border-2" : ""
+                className={`hover:shadow-lg transition-shadow border-[#CAD6DE] ${
+                  announcement.isPinned ? "border-[#E63946] border-2" : ""
                 }`}
               >
                 <CardHeader>
@@ -226,7 +226,7 @@ export default function AnnouncementsPage() {
                     <div className="space-y-3 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         {announcement.isPinned && (
-                          <Badge className="bg-aau-gold text-aau-blue">
+                          <Badge className="bg-[#E63946] text-white border-[#E63946]">
                             <Pin className="h-3 w-3 mr-1" />
                             Pinned
                           </Badge>
@@ -292,7 +292,7 @@ export default function AnnouncementsPage() {
                     </div>
                     <Button
                       size="sm"
-                      className="bg-aau-blue hover:bg-aau-blue/90"
+                      className="bg-[#005081] hover:bg-[#015384] text-white"
                     >
                       Read More
                     </Button>
@@ -336,7 +336,7 @@ export default function AnnouncementsPage() {
                   type="email"
                   className="flex-1"
                 />
-                <Button className="bg-aau-blue hover:bg-aau-blue/90">
+                <Button className="bg-[#005081] hover:bg-[#015384] text-white">
                   Subscribe
                 </Button>
               </div>
