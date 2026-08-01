@@ -8,7 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL, logoutUser } from "@/lib/api";
 
 // Unified user shape consumed by the app
 export interface AppUser {
@@ -69,8 +69,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 423) {
+          throw new Error(
+            errorData.error ||
+              "Too many failed login attempts. Try again later."
+          );
+        }
+        if (response.status === 429) {
+          throw new Error(
+            errorData.error || "Too many login attempts. Please slow down and try again shortly."
+          );
+        }
+        throw new Error(errorData.error || errorData.message || "Login failed");
       }
 
       const data = await response.json();
@@ -164,8 +175,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     setLoading(true);
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      try {
+        // Best-effort: invalidate the token server-side (DRF deletes the
+        // Token row). Local state is cleared regardless of whether this
+        // call succeeds, so a network blip never leaves the user stuck.
+        await logoutUser(token);
+      } catch {
+        // Ignore — the token may already be invalid/expired.
+      }
+    }
     setUser(null);
     localStorage.removeItem("auth_user");
+    localStorage.removeItem("authToken");
     setLoading(false);
   }, []);
 

@@ -169,7 +169,7 @@ AAU-Startup-Portal-Frontend/
    Create a `.env.local` file in the root directory:
 
    ```env
-   NEXT_PUBLIC_API_URL=https://aau-startup-backend.onrender.com/api
+   NEXT_PUBLIC_API_URL=http://localhost:8000/api
    # Add other environment variables as needed
    ```
 

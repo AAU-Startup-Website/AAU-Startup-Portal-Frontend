@@ -59,6 +59,7 @@ import {
   updateMeeting,
   deleteMeeting,
   getProfile,
+  getMentors,
 } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
@@ -92,6 +93,8 @@ function FounderDashboard() {
   const [createMeetingDialogOpen, setCreateMeetingDialogOpen] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [startupsError, setStartupsError] = useState<string | null>(null);
+  const [mentors, setMentors] = useState<any[]>([]);
   const [newMeeting, setNewMeeting] = useState({
     startup: "",
     mentor: "",
@@ -115,16 +118,13 @@ function FounderDashboard() {
           try {
             const startupsData = await getStartups(token);
             setStartups(startupsData);
-          } catch (startupsError) {
-            console.error("Failed to fetch startups", startupsError);
-            setStartups([
-              {
-                id: 1,
-                name: "My First Startup",
-                current_phase: 1,
-                phase_details: { id: 1, name: "Ideation", order: 1 },
-              },
-            ]);
+            setStartupsError(null);
+          } catch (err) {
+            console.error("Failed to fetch startups", err);
+            setStartups([]);
+            setStartupsError(
+              "Failed to load your startups. Please refresh the page."
+            );
           }
 
           try {
@@ -141,6 +141,14 @@ function FounderDashboard() {
           } catch (meetingsError) {
             console.error("Failed to fetch meetings", meetingsError);
             setMeetings([]);
+          }
+
+          try {
+            const mentorsData = await getMentors(token);
+            setMentors(mentorsData);
+          } catch (mentorsError) {
+            console.error("Failed to fetch mentors", mentorsError);
+            setMentors([]);
           }
         }
       } catch (error) {
@@ -529,7 +537,11 @@ function FounderDashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {startups.length === 0 ? (
+                    {startupsError ? (
+                      <div className="text-center py-8">
+                        <p className="text-red-600">{startupsError}</p>
+                      </div>
+                    ) : startups.length === 0 ? (
                       <div className="text-center py-8">
                         <p className="text-[#7D818B]">
                           No startups yet. Start by submitting an idea!
@@ -757,17 +769,12 @@ function FounderDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-[#005081] text-[#005081] hover:bg-[#005081]/10"
-                          >
-                            View Details
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
                             asChild
                             className="border-[#005081] text-[#005081] hover:bg-[#005081]/10"
                           >
-                            <Link href={`/apply?edit=${idea.id}`}>Edit</Link>
+                            <Link href={`/apply?edit=${idea.id}`}>
+                              View / Edit
+                            </Link>
                           </Button>
                           <Button
                             variant="destructive"
@@ -1102,14 +1109,29 @@ function FounderDashboard() {
             </div>
             <div>
               <Label htmlFor="mentor">Mentor</Label>
-              <Input
-                id="mentor"
+              <Select
                 value={newMeeting.mentor}
-                onChange={(e) =>
-                  setNewMeeting({ ...newMeeting, mentor: e.target.value })
+                onValueChange={(value) =>
+                  setNewMeeting({ ...newMeeting, mentor: value })
                 }
-                placeholder="Enter mentor name or ID"
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      mentors.length === 0
+                        ? "No mentors available"
+                        : "Select a mentor"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {mentors.map((mentor) => (
+                    <SelectItem key={mentor.id} value={mentor.id.toString()}>
+                      {mentor.username}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="title">Meeting Title</Label>

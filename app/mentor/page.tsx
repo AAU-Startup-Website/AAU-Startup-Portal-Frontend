@@ -14,8 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { AuthGuard } from "@/components/auth/auth-guard";
-import { Users, Calendar, MessageSquare, ArrowUpRight } from "lucide-react";
-import Link from "next/link";
+import { Users, Calendar } from "lucide-react";
 import { getStartups, getMeetings } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { StartupProgressTab } from "@/components/startup/StartupProgressTab";
@@ -31,119 +30,55 @@ export default function MentorDashboardPage() {
 function MentorDashboard() {
   const [activeTab, setActiveTab] = useState("startups");
   const [assignedStartups, setAssignedStartups] = useState<any[]>([]);
+  const [startupsError, setStartupsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedStartup, setSelectedStartup] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"list" | "progress">("list");
   const [meetings, setMeetings] = useState<any[]>([]);
-  const [meetingsLoading, setMeetingsLoading] = useState(false);
+  const [meetingsError, setMeetingsError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAssignedStartups = async () => {
+      const token = getToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const token = getToken();
-        console.log("Token:", token);
-        if (token) {
-          console.log("Fetching assigned startups for mentor...");
-          const startupsData = await getStartups(token);
-          console.log("Assigned startups data:", startupsData);
-
-          // Transform API data to match expected format for mentor dashboard
-          const transformedStartups = startupsData.map((startup: any) => ({
-            id: startup.id,
-            name: startup.name,
-            founder: startup.founder_name || "Unknown Founder",
-            sector: startup.sector || "Technology",
-            stage: startup.stage || "Early Stage",
-            progress: startup.progress || Math.floor(Math.random() * 100), // Temporary random progress
-            lastMeeting:
-              startup.last_meeting || new Date().toISOString().split("T")[0],
-            nextMeeting:
-              startup.next_meeting ||
-              new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                .toISOString()
-                .split("T")[0],
-            status: startup.status || "on_track",
-            avatar: startup.logo || "/placeholder.svg?height=40&width=40",
-          }));
-
-          setAssignedStartups(transformedStartups);
-
-          // Fetch meetings for this mentor
-          console.log("Fetching meetings for mentor...");
-          try {
-            const meetingsData = await getMeetings(token);
-            console.log("Meetings data:", meetingsData);
-            setMeetings(meetingsData);
-          } catch (meetingsError) {
-            console.error("Failed to fetch meetings:", meetingsError);
-            // Mock meetings for testing
-            setMeetings([
-              {
-                id: 1,
-                startup: 1,
-                startup_name: "EthioPay Solutions",
-                mentor: 1,
-                title: "Weekly Progress Review",
-                description: "Discuss milestones and blockers",
-                schedule_date: "2024-12-15T14:00:00Z",
-                link: "https://meet.google.com/abc-defg",
-              },
-              {
-                id: 2,
-                startup: 2,
-                startup_name: "AgriTech Ethiopia",
-                mentor: 1,
-                title: "Strategy Session",
-                description: "Go-to-market discussion",
-                schedule_date: "2024-12-18T10:00:00Z",
-                link: "https://zoom.us/j/123456789",
-              },
-            ]);
-          }
-        }
+        const startupsData = await getStartups(token);
+        // Transform API data to the shape this dashboard renders. Fields
+        // the backend doesn't currently track (progress, sector, stage,
+        // last/next meeting) are left undefined rather than fabricated —
+        // the UI shows an honest "not tracked yet" placeholder for those.
+        const transformedStartups = startupsData.map((startup: any) => ({
+          id: startup.id,
+          name: startup.name,
+          founder: startup.founder_details?.username || "Unknown Founder",
+          sector: startup.sector,
+          stage: startup.stage,
+          progress: typeof startup.progress === "number" ? startup.progress : null,
+          status: startup.status,
+          avatar: startup.logo || null,
+        }));
+        setAssignedStartups(transformedStartups);
+        setStartupsError(null);
       } catch (error) {
         console.error("Failed to fetch assigned startups:", error);
-        // Mock data for testing
-        setAssignedStartups([
-          {
-            id: 1,
-            name: "EthioPay Solutions",
-            founder: "Meron Tadesse",
-            sector: "FinTech",
-            stage: "Series A",
-            progress: 85,
-            lastMeeting: "2024-12-10",
-            nextMeeting: "2024-12-15",
-            status: "on_track",
-            avatar: "/placeholder.svg?height=40&width=40",
-          },
-          {
-            id: 2,
-            name: "AgriTech Ethiopia",
-            founder: "Dawit Kebede",
-            sector: "Agriculture",
-            stage: "Seed",
-            progress: 60,
-            lastMeeting: "2024-12-08",
-            nextMeeting: "2024-12-20",
-            status: "needs_attention",
-            avatar: "/placeholder.svg?height=40&width=40",
-          },
-          {
-            id: 3,
-            name: "EduConnect",
-            founder: "Hana Mengistu",
-            sector: "Education",
-            stage: "Pre-seed",
-            progress: 40,
-            lastMeeting: "2024-12-05",
-            nextMeeting: "2024-12-18",
-            status: "on_track",
-            avatar: "/placeholder.svg?height=40&width=40",
-          },
-        ]);
+        setAssignedStartups([]);
+        setStartupsError("Failed to load your assigned startups. Please refresh the page.");
       } finally {
         setLoading(false);
+      }
+
+      try {
+        const meetingsData = await getMeetings(token);
+        setMeetings(meetingsData);
+        setMeetingsError(null);
+      } catch (error) {
+        console.error("Failed to fetch meetings:", error);
+        setMeetings([]);
+        setMeetingsError("Failed to load your meetings. Please refresh the page.");
       }
     };
 
@@ -165,64 +100,14 @@ function MentorDashboard() {
     return startup ? startup.name : "Unknown Startup";
   };
 
-  const upcomingMeetings = [
-    {
-      id: 1,
-      startup: "EthioPay Solutions",
-      founder: "Meron Tadesse",
-      date: "2024-12-15",
-      time: "14:00",
-      type: "Progress Review",
-      location: "Conference Room A",
-    },
-    {
-      id: 2,
-      startup: "HealthConnect Ethiopia",
-      founder: "Daniel Bekele",
-      date: "2024-12-18",
-      time: "10:00",
-      type: "Strategy Session",
-      location: "Innovation Lab",
-    },
-    {
-      id: 3,
-      startup: "EduTech Africa",
-      founder: "Sara Ahmed",
-      date: "2024-12-20",
-      time: "16:00",
-      type: "Pitch Practice",
-      location: "Virtual Meeting",
-    },
-  ];
+  const meetingsThisWeek = meetings.filter((meeting) => {
+    const date = new Date(meeting.schedule_date);
+    const now = new Date();
+    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return date >= now && date <= weekFromNow;
+  }).length;
 
-  const feedbackRequests = [
-    {
-      id: 1,
-      startup: "EthioPay Solutions",
-      type: "Business Plan Review",
-      submittedAt: "2024-12-12",
-      priority: "high",
-      description: "Review updated business plan for Series A funding round",
-    },
-    {
-      id: 2,
-      startup: "HealthConnect Ethiopia",
-      type: "Market Analysis",
-      submittedAt: "2024-12-11",
-      priority: "medium",
-      description: "Feedback on market research and competitive analysis",
-    },
-  ];
-
-  const availabilitySlots = [
-    { day: "Monday", slots: ["09:00-10:00", "14:00-15:00", "16:00-17:00"] },
-    { day: "Tuesday", slots: ["10:00-11:00", "15:00-16:00"] },
-    { day: "Wednesday", slots: ["09:00-10:00", "11:00-12:00", "14:00-15:00"] },
-    { day: "Thursday", slots: ["13:00-14:00", "16:00-17:00"] },
-    { day: "Friday", slots: ["09:00-10:00", "10:00-11:00"] },
-  ];
-
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case "on_track":
         return "bg-green-100 text-green-800";
@@ -230,19 +115,6 @@ function MentorDashboard() {
         return "bg-yellow-100 text-yellow-800";
       case "at_risk":
         return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "low":
-        return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -284,17 +156,15 @@ function MentorDashboard() {
                 onValueChange={setActiveTab}
                 className="space-y-6"
               >
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="startups">Assigned Startups</TabsTrigger>
                   <TabsTrigger value="meetings">Meetings</TabsTrigger>
-                  <TabsTrigger value="feedback">Feedback</TabsTrigger>
-                  <TabsTrigger value="availability">Availability</TabsTrigger>
                 </TabsList>
 
                 {/* Assigned Startups Tab */}
                 <TabsContent value="startups" className="space-y-6">
                   {/* Overview Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
@@ -321,27 +191,10 @@ function MentorDashboard() {
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold text-aau-blue">
-                          {upcomingMeetings.length}
+                          {meetingsThisWeek}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           Scheduled sessions
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                          Pending Feedback
-                        </CardTitle>
-                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-aau-blue">
-                          {feedbackRequests.length}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Awaiting review
                         </p>
                       </CardContent>
                     </Card>
@@ -354,6 +207,10 @@ function MentorDashboard() {
                         <p className="text-muted-foreground">
                           Loading assigned startups...
                         </p>
+                      </div>
+                    ) : startupsError ? (
+                      <div className="text-center py-8">
+                        <p className="text-red-600">{startupsError}</p>
                       </div>
                     ) : assignedStartups.length === 0 ? (
                       <div className="text-center py-8">
@@ -371,10 +228,12 @@ function MentorDashboard() {
                             <div className="flex items-start justify-between">
                               <div className="flex items-center space-x-4">
                                 <Avatar className="h-12 w-12">
-                                  <AvatarImage
-                                    src={startup.avatar || "/placeholder.svg"}
-                                    alt={startup.name}
-                                  />
+                                  {startup.avatar && (
+                                    <AvatarImage
+                                      src={startup.avatar}
+                                      alt={startup.name}
+                                    />
+                                  )}
                                   <AvatarFallback className="bg-aau-blue text-white">
                                     {startup.name.substring(0, 2)}
                                   </AvatarFallback>
@@ -384,14 +243,17 @@ function MentorDashboard() {
                                     {startup.name}
                                   </CardTitle>
                                   <CardDescription>
-                                    Founded by {startup.founder} •{" "}
-                                    {startup.sector} • {startup.stage}
+                                    Founded by {startup.founder}
+                                    {startup.sector ? ` • ${startup.sector}` : ""}
+                                    {startup.stage ? ` • ${startup.stage}` : ""}
                                   </CardDescription>
                                 </div>
                               </div>
-                              <Badge className={getStatusColor(startup.status)}>
-                                {startup.status.replace("_", " ")}
-                              </Badge>
+                              {startup.status && (
+                                <Badge className={getStatusColor(startup.status)}>
+                                  {startup.status.replace("_", " ")}
+                                </Badge>
+                              )}
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -401,56 +263,23 @@ function MentorDashboard() {
                                   Overall Progress
                                 </span>
                                 <span className="text-sm text-muted-foreground">
-                                  {startup.progress}%
+                                  {startup.progress === null
+                                    ? "Not tracked yet"
+                                    : `${startup.progress}%`}
                                 </span>
                               </div>
-                              <Progress
-                                value={startup.progress}
-                                className="h-2"
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">
-                                  Last Meeting:
-                                </span>
-                                <div className="font-medium">
-                                  {new Date(
-                                    startup.lastMeeting
-                                  ).toLocaleDateString()}
-                                </div>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">
-                                  Next Meeting:
-                                </span>
-                                <div className="font-medium">
-                                  {new Date(
-                                    startup.nextMeeting
-                                  ).toLocaleDateString()}
-                                </div>
-                              </div>
+                              {startup.progress !== null && (
+                                <Progress value={startup.progress} className="h-2" />
+                              )}
                             </div>
 
                             <div className="flex space-x-2">
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() =>
-                                  handleViewStartupDetails(startup)
-                                }
+                                onClick={() => handleViewStartupDetails(startup)}
                               >
                                 View Details
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                Send Message
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="bg-aau-blue hover:bg-aau-blue/90"
-                              >
-                                Schedule Meeting
                               </Button>
                             </div>
                           </CardContent>
@@ -464,26 +293,18 @@ function MentorDashboard() {
                 <TabsContent value="meetings" className="space-y-6">
                   <Card>
                     <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle>Upcoming Meetings</CardTitle>
-                          <CardDescription>
-                            Your scheduled mentoring sessions
-                          </CardDescription>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <Link href="/bookings">
-                              View Calendar
-                              <ArrowUpRight className="h-4 w-4 ml-1" />
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
+                      <CardTitle>Upcoming Meetings</CardTitle>
+                      <CardDescription>
+                        Your scheduled mentoring sessions
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {meetings.length === 0 ? (
+                        {meetingsError ? (
+                          <div className="text-center py-8">
+                            <p className="text-red-600">{meetingsError}</p>
+                          </div>
+                        ) : meetings.length === 0 ? (
                           <div className="text-center py-8">
                             <p className="text-muted-foreground">
                               No meetings scheduled yet.
@@ -538,148 +359,6 @@ function MentorDashboard() {
                             </div>
                           ))
                         )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* Feedback Tab */}
-                <TabsContent value="feedback" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Pending Feedback Requests</CardTitle>
-                      <CardDescription>
-                        Review and provide feedback on startup submissions
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {feedbackRequests.map((request) => (
-                          <div
-                            key={request.id}
-                            className="p-4 border rounded-lg"
-                          >
-                            <div className="flex items-start justify-between mb-3">
-                              <div>
-                                <h4 className="font-medium">
-                                  {request.startup}
-                                </h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {request.type}
-                                </p>
-                              </div>
-                              <Badge
-                                className={getPriorityColor(request.priority)}
-                              >
-                                {request.priority} priority
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-3">
-                              {request.description}
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <p className="text-xs text-muted-foreground">
-                                Submitted on{" "}
-                                {new Date(
-                                  request.submittedAt
-                                ).toLocaleDateString()}
-                              </p>
-                              <div className="flex space-x-2">
-                                <Button variant="outline" size="sm">
-                                  View Document
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  className="bg-aau-blue hover:bg-aau-blue/90"
-                                >
-                                  Provide Feedback
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* Availability Tab */}
-                <TabsContent value="availability" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle>Weekly Availability</CardTitle>
-                          <CardDescription>
-                            Manage your mentoring schedule and availability
-                          </CardDescription>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          Edit Schedule
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {availabilitySlots.map((day, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-4 border rounded-lg"
-                          >
-                            <div className="font-medium w-24">{day.day}</div>
-                            <div className="flex-1 flex flex-wrap gap-2">
-                              {day.slots.map((slot, slotIndex) => (
-                                <Badge
-                                  key={slotIndex}
-                                  variant="outline"
-                                  className="text-xs"
-                                >
-                                  {slot}
-                                </Badge>
-                              ))}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {day.slots.length} slots
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Mentoring Statistics</CardTitle>
-                      <CardDescription>
-                        Your impact and engagement metrics
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-aau-blue">
-                            24
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Total Sessions
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-aau-blue">
-                            4.8
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Average Rating
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-aau-blue">
-                            18
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Hours This Month
-                          </div>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>

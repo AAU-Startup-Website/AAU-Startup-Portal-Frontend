@@ -62,6 +62,7 @@ export function StartupProgressTab({
   const [phases, setPhases] = useState<any[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [milestonesLoading, setMilestonesLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newMilestone, setNewMilestone] = useState({
@@ -87,34 +88,13 @@ export function StartupProgressTab({
           const milestonesData = await getMilestones(token, startup.id);
           console.log("Milestones data:", milestonesData);
           setMilestones(milestonesData);
+          setError(null);
         }
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-        // Mock data for testing
-        setPhases([
-          { id: 1, name: "Ideation", order: 1 },
-          { id: 2, name: "Validation", order: 2 },
-          { id: 3, name: "MVP", order: 3 },
-          { id: 4, name: "Growth", order: 4 },
-        ]);
-        setMilestones([
-          {
-            id: 1,
-            title: "Market Research",
-            description: "Conduct comprehensive market research",
-            completed: true,
-            phase: 1,
-            due_date: "2024-11-15",
-          },
-          {
-            id: 2,
-            title: "User Interviews",
-            description: "Interview 20 potential users",
-            completed: false,
-            phase: 2,
-            due_date: "2024-12-01",
-          },
-        ]);
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+        setPhases([]);
+        setMilestones([]);
+        setError("Failed to load startup progress. Please refresh the page.");
       } finally {
         setLoading(false);
       }
@@ -204,6 +184,20 @@ export function StartupProgressTab({
     return (
       <div className="flex items-center justify-center py-8">
         <p className="text-muted-foreground">Loading startup progress...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <Button variant="outline" size="sm" onClick={onBack}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Startups
+        </Button>
+        <div className="flex items-center justify-center py-8">
+          <p className="text-red-600">{error}</p>
+        </div>
       </div>
     );
   }

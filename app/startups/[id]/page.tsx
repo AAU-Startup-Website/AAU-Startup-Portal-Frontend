@@ -29,8 +29,10 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-// This would typically come from a database or API
-async function getStartup(id: string) {
+// Demo content only — the real Startup model (name/description/founder/
+// phase) doesn't have the rich fields this page renders (metrics, team,
+// investors, milestones, press, mentor, tags). See docs/KNOWN_GAPS.md.
+async function getMockStartupProfile(id: string) {
   const startups = [
     {
       id: 1,
@@ -180,7 +182,7 @@ export default async function StartupProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const startup = await getStartup(id);
+  const startup = await getMockStartupProfile(id);
 
   if (!startup) {
     notFound();

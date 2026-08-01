@@ -30,6 +30,7 @@ import {
   Megaphone,
   RefreshCcw,
 } from "lucide-react";
+import { getAnnouncements } from "@/lib/api";
 
 type Announcement = {
   id: string;
@@ -37,10 +38,9 @@ type Announcement = {
   content: string;
   created_at: string;
   updated_at: string;
-  // Optional UI derived fields (not in base table) with fallbacks
   type?: string | null;
   category?: string | null;
-  isPinned?: boolean | null;
+  is_pinned?: boolean | null;
   author?: string | null;
 };
 
@@ -57,10 +57,15 @@ export default function AnnouncementsPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/announcements`);
-      if (!res.ok) throw new Error(await res.text());
-      const json = await res.json();
-      setAnnouncements(json.data || []);
+      const json = await getAnnouncements();
+      const data: Announcement[] = json.results || json.data || json || [];
+      // Server ordering is newest-first only; pinned-first sort must
+      // happen client-side (is_pinned doesn't affect server ordering).
+      const sorted = [...data].sort((a, b) => {
+        if (!!a.is_pinned === !!b.is_pinned) return 0;
+        return a.is_pinned ? -1 : 1;
+      });
+      setAnnouncements(sorted);
     } catch (e: any) {
       setError(e.message || "Failed to load announcements");
     } finally {
@@ -218,14 +223,14 @@ export default function AnnouncementsPage() {
               <Card
                 key={announcement.id}
                 className={`hover:shadow-lg transition-shadow border-[#CAD6DE] ${
-                  announcement.isPinned ? "border-[#E63946] border-2" : ""
+                  announcement.is_pinned ? "border-[#E63946] border-2" : ""
                 }`}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="space-y-3 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {announcement.isPinned && (
+                        {announcement.is_pinned && (
                           <Badge className="bg-[#E63946] text-white border-[#E63946]">
                             <Pin className="h-3 w-3 mr-1" />
                             Pinned

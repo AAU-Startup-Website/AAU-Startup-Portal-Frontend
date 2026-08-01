@@ -26,12 +26,10 @@ import {
   Cell,
 } from "recharts";
 import {
-  Users,
   Building2,
   TrendingUp,
   FileText,
   Award,
-  ArrowUpRight,
   CheckCircle,
   XCircle,
   Eye,
@@ -63,6 +61,28 @@ function AdminDashboard() {
   const { user } = useAuth();
   const router = useRouter();
 
+  const fetchAllIdeas = async () => {
+    try {
+      const token = getToken();
+      if (token) {
+        const ideasData = await getIdeas(token);
+        setIdeas(ideasData);
+      }
+    } catch (error) {
+      console.error("Failed to fetch ideas:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Hooks must run unconditionally on every render (Rules of Hooks), so this
+  // effect is declared before the admin-check early return below rather than
+  // after it — previously it sat after the return, meaning it was skipped
+  // entirely on renders where the guard bailed out.
+  useEffect(() => {
+    fetchAllIdeas();
+  }, []);
+
   // Check if user is admin
   if (!user || user.role !== "admin") {
     return (
@@ -87,24 +107,6 @@ function AdminDashboard() {
       </div>
     );
   }
-
-  useEffect(() => {
-    fetchAllIdeas();
-  }, []);
-
-  const fetchAllIdeas = async () => {
-    try {
-      const token = getToken();
-      if (token) {
-        const ideasData = await getIdeas(token);
-        setIdeas(ideasData);
-      }
-    } catch (error) {
-      console.error("Failed to fetch ideas:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleApprove = async () => {
     if (!selectedIdea) return;
@@ -221,9 +223,10 @@ function AdminDashboard() {
   })();
 
   // --- METRICS CALCULATION ---
-  const recentIdeas = ideas
-    .filter((idea: any) => idea.status === "pending")
-    .slice(0, 5);
+  // Shows every pending idea (not just a capped preview) since this list is
+  // the actual review queue — there's no separate "all ideas" page to link
+  // off to.
+  const recentIdeas = ideas.filter((idea: any) => idea.status === "pending");
 
   const totalIdeas = ideas.length;
   const pendingIdeas = ideas.filter(
@@ -451,21 +454,11 @@ function AdminDashboard() {
           {/* Recent Ideas */}
           <Card className="border-[#CAD6DE] shadow-sm">
             <CardHeader className="border-b border-[#CAD6DE]/30">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-[#005081]">Recent Ideas</CardTitle>
-                  <CardDescription className="text-[#7D818B]">
-                    Latest idea submissions requiring review
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-[#005081] border-[#005081]/30 hover:bg-[#005081]/5"
-                >
-                  View All
-                  <ArrowUpRight className="h-4 w-4 ml-1" />
-                </Button>
+              <div>
+                <CardTitle className="text-[#005081]">Pending Ideas</CardTitle>
+                <CardDescription className="text-[#7D818B]">
+                  All idea submissions awaiting review
+                </CardDescription>
               </div>
             </CardHeader>
             <CardContent className="pt-6">
@@ -548,62 +541,6 @@ function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer border-[#CAD6DE] group">
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-[#005081]/10 rounded-lg flex items-center justify-center group-hover:bg-[#005081] transition-colors">
-                    <FileText className="h-6 w-6 text-[#005081] group-hover:text-white transition-colors" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[#005081]">
-                      Review Ideas
-                    </h3>
-                    <p className="text-sm text-[#7D818B]">
-                      {pendingIdeas} pending reviews
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow cursor-pointer border-[#CAD6DE] group">
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-[#4378A0]/10 rounded-lg flex items-center justify-center group-hover:bg-[#4378A0] transition-colors">
-                    <Users className="h-6 w-6 text-[#4378A0] group-hover:text-white transition-colors" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[#005081]">
-                      Manage Users
-                    </h3>
-                    <p className="text-sm text-[#7D818B]">
-                      User roles & permissions
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow cursor-pointer border-[#CAD6DE] group">
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                    <Award className="h-6 w-6 text-green-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[#005081]">
-                      View Analytics
-                    </h3>
-                    <p className="text-sm text-[#7D818B]">
-                      Ideas & approval metrics
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
 

@@ -31,13 +31,6 @@ function ApplyPageContent() {
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const editId = searchParams.get("edit");
-    if (editId) {
-      loadIdeaForEditing(parseInt(editId));
-    }
-  }, [searchParams]);
-
   const loadIdeaForEditing = async (ideaId: number) => {
     try {
       setLoading(true);
@@ -94,6 +87,13 @@ function ApplyPageContent() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId) {
+      loadIdeaForEditing(parseInt(editId));
+    }
+  }, [searchParams]);
 
   const steps = [
     {

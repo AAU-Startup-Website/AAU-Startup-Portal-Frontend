@@ -1,63 +1,111 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { BookingCalendar } from "@/components/booking/booking-calendar"
-import { ArrowLeft, Calendar, Clock, Users, MapPin, CheckCircle } from "lucide-react"
-import Link from "next/link"
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Users, CheckCircle, AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { getResourceById, createBooking } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 
-export default function BookResourcePage({ params }: { params: { id: string } }) {
-  const [selectedDateTime, setSelectedDateTime] = useState<{ date: string; time: string } | null>(null)
-  const [bookingDetails, setBookingDetails] = useState({
-    purpose: "",
-    attendees: "",
-    specialRequests: "",
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [bookingConfirmed, setBookingConfirmed] = useState(false)
+export default function BookResourcePage() {
+  const params = useParams<{ id: string }>();
+  const resourceId = params.id;
 
-  // Mock resource data - in real app this would come from API
-  const resource = {
-    id: params.id,
-    name: "Innovation Lab",
-    type: "workspace",
-    description: "Fully equipped workspace with high-speed internet and collaboration tools",
-    capacity: "20 people",
-    location: "AAU Innovation Center, Room 201",
-    features: ["WiFi", "Projector", "Whiteboard", "Coffee", "Air Conditioning"],
-    hourlyRate: "Free for AAU startups",
-    rules: [
-      "Maximum booking duration: 4 hours",
-      "Cancel at least 2 hours in advance",
-      "Clean up after use",
-      "No food or drinks near equipment",
-    ],
-  }
+  const [resource, setResource] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const handleTimeSlotSelect = (date: string, time: string) => {
-    setSelectedDateTime({ date, time })
-  }
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchResource = async () => {
+      const token = getToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const data = await getResourceById(token, resourceId);
+        setResource(data);
+      } catch (err) {
+        console.error("Failed to fetch resource:", err);
+        setLoadError("Failed to load this resource. Please go back and try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchResource();
+  }, [resourceId]);
 
   const handleSubmitBooking = async () => {
-    if (!selectedDateTime || !bookingDetails.purpose || !bookingDetails.attendees) {
-      return
+    const token = getToken();
+    if (!token || !startTime || !endTime) return;
+
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const booking = await createBooking(token, {
+        resource: resourceId,
+        start_time: new Date(startTime).toISOString(),
+        end_time: new Date(endTime).toISOString(),
+        purpose,
+      });
+      setConfirmedBooking(booking);
+    } catch (err: any) {
+      console.error("Failed to create booking:", err);
+      setSubmitError(
+        err.message || "Failed to create the booking. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
     }
+  };
 
-    setIsSubmitting(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    setIsSubmitting(false)
-    setBookingConfirmed(true)
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading resource...</p>
+      </div>
+    );
   }
 
-  if (bookingConfirmed) {
+  if (loadError || !resource) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="text-center py-8 space-y-4">
+            <AlertCircle className="h-8 w-8 text-red-600 mx-auto" />
+            <p className="text-red-600">{loadError || "Resource not found."}</p>
+            <Button variant="outline" asChild>
+              <Link href="/resources">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Resources
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (confirmedBooking) {
     return (
       <div className="min-h-screen bg-background">
         <section className="py-16 px-4">
@@ -67,39 +115,29 @@ export default function BookResourcePage({ params }: { params: { id: string } })
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
-                <h1 className="text-2xl font-bold mb-4">Booking Confirmed!</h1>
+                <h1 className="text-2xl font-bold mb-4">Booking Requested!</h1>
                 <p className="text-muted-foreground mb-6">
-                  Your booking for {resource.name} has been successfully confirmed.
+                  Your booking for {resource.name} has been submitted with
+                  status "{confirmedBooking.status}". You'll be notified once
+                  incubator staff confirm it.
                 </p>
 
-                <div className="bg-muted/50 rounded-lg p-6 mb-6 text-left">
-                  <h3 className="font-semibold mb-4">Booking Details</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-aau-blue" />
-                      <span>
-                        {new Date(selectedDateTime!.date).toLocaleDateString("en-US", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-2 text-aau-blue" />
-                      <span>
-                        {selectedDateTime!.time} - {Number.parseInt(selectedDateTime!.time) + 1}:00
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 text-aau-blue" />
-                      <span>{resource.location}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-2 text-aau-blue" />
-                      <span>{bookingDetails.attendees} attendees</span>
-                    </div>
+                <div className="bg-muted/50 rounded-lg p-6 mb-6 text-left text-sm space-y-2">
+                  <div>
+                    <span className="text-muted-foreground">Resource: </span>
+                    <span className="font-medium">{resource.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">From: </span>
+                    <span className="font-medium">
+                      {new Date(confirmedBooking.start_time).toLocaleString()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">To: </span>
+                    <span className="font-medium">
+                      {new Date(confirmedBooking.end_time).toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
@@ -116,191 +154,99 @@ export default function BookResourcePage({ params }: { params: { id: string } })
           </div>
         </section>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <section className="bg-muted/30 py-12 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex items-center space-x-4 mb-6">
-            <Button variant="outline" asChild>
-              <Link href="/resources">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Resources
-              </Link>
-            </Button>
-          </div>
+        <div className="container mx-auto max-w-3xl">
+          <Button variant="outline" asChild className="mb-6">
+            <Link href="/resources">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Resources
+            </Link>
+          </Button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <h1 className="text-3xl font-bold mb-2">Book {resource.name}</h1>
-              <p className="text-muted-foreground mb-4">{resource.description}</p>
-
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="flex items-center">
-                  <Users className="h-4 w-4 mr-1 text-aau-blue" />
-                  <span>{resource.capacity}</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="h-4 w-4 mr-1 text-aau-blue" />
-                  <span>{resource.location}</span>
-                </div>
-                <Badge variant="outline">{resource.type}</Badge>
+          <h1 className="text-3xl font-bold mb-2">Book {resource.name}</h1>
+          {resource.description && (
+            <p className="text-muted-foreground mb-4">{resource.description}</p>
+          )}
+          <div className="flex items-center gap-4 text-sm">
+            {resource.capacity && (
+              <div className="flex items-center">
+                <Users className="h-4 w-4 mr-1 text-aau-blue" />
+                <span>{resource.capacity} people</span>
               </div>
-            </div>
-
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resource Features</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {resource.features.map((feature, index) => (
-                      <div key={index} className="flex items-center text-sm">
-                        <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                        {feature}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t">
-                    <div className="text-sm">
-                      <span className="font-medium">Rate: </span>
-                      <span className="text-aau-blue">{resource.hourlyRate}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            )}
+            <Badge variant="outline" className="capitalize">
+              {resource.type?.replace("_", " ")}
+            </Badge>
           </div>
         </div>
       </section>
 
-      {/* Booking Form */}
       <section className="py-12 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Calendar */}
-            <div>
-              <BookingCalendar
-                resourceId={resource.id}
-                resourceName={resource.name}
-                onTimeSlotSelect={handleTimeSlotSelect}
-              />
-            </div>
-
-            {/* Booking Details */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Booking Details</CardTitle>
-                  <CardDescription>Provide information about your booking</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="purpose">Purpose of Booking *</Label>
-                    <Textarea
-                      id="purpose"
-                      placeholder="Describe what you'll be using the space for..."
-                      value={bookingDetails.purpose}
-                      onChange={(e) => setBookingDetails((prev) => ({ ...prev, purpose: e.target.value }))}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="attendees">Number of Attendees *</Label>
-                    <Input
-                      id="attendees"
-                      type="number"
-                      placeholder="e.g., 5"
-                      min="1"
-                      max="20"
-                      value={bookingDetails.attendees}
-                      onChange={(e) => setBookingDetails((prev) => ({ ...prev, attendees: e.target.value }))}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="requests">Special Requests</Label>
-                    <Textarea
-                      id="requests"
-                      placeholder="Any special setup or equipment needs..."
-                      value={bookingDetails.specialRequests}
-                      onChange={(e) => setBookingDetails((prev) => ({ ...prev, specialRequests: e.target.value }))}
-                      className="mt-1"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Booking Summary */}
-              {selectedDateTime && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Booking Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Resource</span>
-                      <span className="font-medium">{resource.name}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Date</span>
-                      <span className="font-medium">{new Date(selectedDateTime.date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Time</span>
-                      <span className="font-medium">
-                        {selectedDateTime.time} - {Number.parseInt(selectedDateTime.time) + 1}:00
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Duration</span>
-                      <span className="font-medium">1 hour</span>
-                    </div>
-                    <div className="flex items-center justify-between border-t pt-3">
-                      <span className="text-sm text-muted-foreground">Cost</span>
-                      <span className="font-medium text-aau-blue">{resource.hourlyRate}</span>
-                    </div>
-                  </CardContent>
-                </Card>
+        <div className="container mx-auto max-w-3xl">
+          <Card>
+            <CardHeader>
+              <CardTitle>Booking Details</CardTitle>
+              <CardDescription>
+                Choose a time and describe what you'll use it for. Staff will
+                confirm your booking.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {submitError && (
+                <p className="text-sm text-red-600">{submitError}</p>
               )}
 
-              {/* Rules */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Booking Rules</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm">
-                    {resource.rules.map((rule, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="text-aau-blue mr-2">•</span>
-                        {rule}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startTime">Start Time *</Label>
+                  <Input
+                    id="startTime"
+                    type="datetime-local"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endTime">End Time *</Label>
+                  <Input
+                    id="endTime"
+                    type="datetime-local"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
 
-              {/* Submit Button */}
+              <div>
+                <Label htmlFor="purpose">Purpose of Booking</Label>
+                <Textarea
+                  id="purpose"
+                  placeholder="Describe what you'll be using this resource for..."
+                  value={purpose}
+                  onChange={(e) => setPurpose(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+
               <Button
                 className="w-full bg-aau-blue hover:bg-aau-blue/90"
                 size="lg"
-                disabled={!selectedDateTime || !bookingDetails.purpose || !bookingDetails.attendees || isSubmitting}
+                disabled={!startTime || !endTime || submitting}
                 onClick={handleSubmitBooking}
               >
-                {isSubmitting ? "Confirming Booking..." : "Confirm Booking"}
+                {submitting ? "Submitting..." : "Request Booking"}
               </Button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
     </div>
-  )
+  );
 }

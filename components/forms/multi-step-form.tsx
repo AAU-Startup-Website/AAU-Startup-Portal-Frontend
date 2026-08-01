@@ -35,7 +35,7 @@ export function MultiStepForm({
 
   const updateFormData = useCallback(
     (stepData: any) => {
-      setFormData((prev) => ({ ...prev, ...stepData }));
+      setFormData((prev: any) => ({ ...prev, ...stepData }));
     },
     [setFormData]
   );

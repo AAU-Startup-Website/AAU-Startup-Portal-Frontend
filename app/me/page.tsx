@@ -107,8 +107,10 @@ function ProfilePage() {
         username: `${editedProfile.firstName} ${editedProfile.lastName}`.trim(),
         email: editedProfile.email,
         profile: {
+          // `role` is intentionally omitted: the backend silently drops it
+          // from this endpoint (self-promotion isn't allowed), so sending
+          // it would just be misleading.
           bio: editedProfile.bio,
-          role: editedProfile.role,
           skills: editedProfile.skills,
           department: editedProfile.department,
           yearOfStudy: editedProfile.yearOfStudy,

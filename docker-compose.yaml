@@ -1,16 +1,23 @@
 version: "3.8"
 
+# Production topology: only nginx publishes a port to the host. The Next.js
+# app is internal-only (`expose`, not `ports`) — matches the same
+# transport-hardening pattern applied to the Django backend's
+# docker-compose.prod.yml. For local development without nginx, run
+# `docker compose run --service-ports aau-startup-frontend` or add a
+# docker-compose.override.yml that re-adds `ports: ["3000:3000"]`.
+
 services:
   aau-startup-frontend:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: aau-startup-portal-frontend
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=https://aau-startup-backend.onrender.com/api
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
     restart: unless-stopped
     healthcheck:
       test:
@@ -26,3 +33,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  nginx:
+    image: nginx:alpine
+    container_name: aau-startup-portal-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      # Only consumed by the (currently commented-out) HTTPS server block in
+      # nginx/templates/default.conf.template; set before enabling TLS.
+      - SERVER_NAME=${SERVER_NAME:-your-domain.example}
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/templates:/etc/nginx/templates:ro
+    depends_on:
+      - aau-startup-frontend

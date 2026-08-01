@@ -1,37 +1,63 @@
 // lib/api.ts
 
-export const API_BASE_URL = "/api";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-// Function to handle user registration
-export const registerUser = async (userData: any) => {
-  const response = await fetch(`${API_BASE_URL}/users/register/`, {
+// Registration and login are implemented directly in
+// components/auth/auth-context.tsx (they need the founder/student role
+// remapping and richer error handling) rather than here — see login()/
+// signUp() there.
+
+// Request a password reset email
+export const requestPasswordReset = async (email: string) => {
+  const response = await fetch(`${API_BASE_URL}/users/password-reset/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(userData),
+    body: JSON.stringify({ email }),
   });
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Something went wrong");
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || "Something went wrong");
   }
   return response.json();
 };
 
-// Function to handle user login
-export const loginUser = async (credentials: any) => {
-  const response = await fetch(`${API_BASE_URL}/users/login/`, {
+// Confirm a password reset using the uid/token from the emailed link
+export const confirmPasswordReset = async (
+  uid: string,
+  token: string,
+  newPassword: string
+) => {
+  const response = await fetch(`${API_BASE_URL}/users/password-reset/confirm/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(credentials),
+    body: JSON.stringify({ uid, token, new_password: newPassword }),
   });
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Something went wrong");
+    const errorData = await response.json().catch(() => ({}));
+    const message = Array.isArray(errorData.error)
+      ? errorData.error.join(" ")
+      : errorData.error || errorData.message || "Something went wrong";
+    throw new Error(message);
   }
   return response.json();
+};
+
+// Function to invalidate the current auth token server-side on logout
+export const logoutUser = async (token: string) => {
+  const response = await fetch(`${API_BASE_URL}/users/logout/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Token ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to log out");
+  }
 };
 
 // Function to get user profile
@@ -51,7 +77,7 @@ export const getProfile = async (token: string) => {
 // Function to update user profile
 export const updateProfile = async (token: string, profileData: any) => {
   const response = await fetch(`${API_BASE_URL}/users/profile/`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Token ${token}`,
@@ -117,26 +143,6 @@ export const updateIdea = async (
 };
 
 // Partially update an idea
-export const partialUpdateIdea = async (
-  token: string,
-  ideaId: number,
-  ideaData: any
-) => {
-  const response = await fetch(`${API_BASE_URL}/ideas/${ideaId}/`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Token ${token}`,
-    },
-    body: JSON.stringify(ideaData),
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(JSON.stringify(errorData) || "Failed to update idea");
-  }
-  return response.json();
-};
-
 // Delete an idea
 export const deleteIdea = async (token: string, ideaId: number) => {
   const response = await fetch(`${API_BASE_URL}/ideas/${ideaId}/`, {
@@ -178,11 +184,17 @@ export const approveIdea = async (
     },
     body: JSON.stringify({ feedback: feedback || "" }),
   });
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(JSON.stringify(errorData) || "Failed to approve idea");
+    // The backend is idempotent: a 400 with this status text means the
+    // idea was already approved (e.g. a double-click or a race with
+    // another admin), not a real failure.
+    if (response.status === 400 && data.status === "idea already approved") {
+      return data;
+    }
+    throw new Error(JSON.stringify(data) || "Failed to approve idea");
   }
-  return response.json();
+  return data;
 };
 
 // Reject an idea
@@ -223,35 +235,6 @@ export const getStartups = async (token: string) => {
   const data = await response.json();
   console.log("Startups API response data:", data);
   return data;
-};
-
-// Get a single startup
-export const getStartup = async (token: string, startupId: number) => {
-  const response = await fetch(`${API_BASE_URL}/startups/${startupId}/`, {
-    headers: {
-      Authorization: `Token ${token}`,
-    },
-  });
-  if (!response.ok) throw new Error("Failed to fetch startup");
-  return response.json();
-};
-
-// Update startup
-export const updateStartup = async (
-  token: string,
-  startupId: number,
-  data: any
-) => {
-  const response = await fetch(`${API_BASE_URL}/startups/${startupId}/`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Token ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error("Failed to update startup");
-  return response.json();
 };
 
 // Get milestones
@@ -444,6 +427,17 @@ export const deleteMeeting = async (token: string, meetingId: number) => {
   return true;
 };
 
+// Get mentors (for the mentor picker on meeting creation)
+export const getMentors = async (token: string) => {
+  const response = await fetch(`${API_BASE_URL}/users/match/?role=mentor`, {
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error("Failed to fetch mentors");
+  return response.json();
+};
+
 // Get matched users for co-founder matching
 export const getMatchedUsers = async (token: string, search?: string) => {
   console.log("Making API call to get matched users");
@@ -465,4 +459,147 @@ export const getMatchedUsers = async (token: string, search?: string) => {
   const data = await response.json();
   console.log("Get matched users response data:", data);
   return data;
+};
+
+// --- Announcements ---
+
+// Get announcements (public, no auth required)
+export const getAnnouncements = async () => {
+  const response = await fetch(`${API_BASE_URL}/announcements/`);
+  if (!response.ok) throw new Error("Failed to fetch announcements");
+  return response.json();
+};
+
+// Create an announcement (staff only)
+export const createAnnouncement = async (token: string, data: any) => {
+  const response = await fetch(`${API_BASE_URL}/announcements/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Token ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(JSON.stringify(errorData) || "Failed to create announcement");
+  }
+  return response.json();
+};
+
+// Update an announcement (staff only)
+export const updateAnnouncement = async (
+  token: string,
+  id: string,
+  data: any
+) => {
+  const response = await fetch(`${API_BASE_URL}/announcements/${id}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Token ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(JSON.stringify(errorData) || "Failed to update announcement");
+  }
+  return response.json();
+};
+
+// Delete an announcement (staff only)
+export const deleteAnnouncement = async (token: string, id: string) => {
+  const response = await fetch(`${API_BASE_URL}/announcements/${id}/`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error("Failed to delete announcement");
+  return true;
+};
+
+// --- Events / Resources / Bookings ---
+
+// Get events
+export const getEvents = async (token: string) => {
+  const response = await fetch(`${API_BASE_URL}/events/`, {
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error("Failed to fetch events");
+  return response.json();
+};
+
+// Get resources
+export const getResources = async (token: string) => {
+  const response = await fetch(`${API_BASE_URL}/resources/`, {
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error("Failed to fetch resources");
+  return response.json();
+};
+
+// Get a single resource
+export const getResourceById = async (token: string, resourceId: string) => {
+  const response = await fetch(`${API_BASE_URL}/resources/${resourceId}/`, {
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error("Failed to fetch resource");
+  return response.json();
+};
+
+// Get the current user's bookings
+export const getBookings = async (token: string) => {
+  const response = await fetch(`${API_BASE_URL}/bookings/`, {
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error("Failed to fetch bookings");
+  return response.json();
+};
+
+// Create a booking for the current user
+export const createBooking = async (token: string, bookingData: any) => {
+  const response = await fetch(`${API_BASE_URL}/bookings/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Token ${token}`,
+    },
+    body: JSON.stringify(bookingData),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(JSON.stringify(errorData) || "Failed to create booking");
+  }
+  return response.json();
+};
+
+// Update a booking (e.g. cancel: { status: "cancelled" })
+export const updateBooking = async (
+  token: string,
+  bookingId: string,
+  data: any
+) => {
+  const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Token ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(JSON.stringify(errorData) || "Failed to update booking");
+  }
+  return response.json();
 };

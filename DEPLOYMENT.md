@@ -69,7 +69,7 @@ Edit `.env.production` with your actual values:
 
 ```bash
 # Backend API URL
-NEXT_PUBLIC_API_URL=https://your-backend-api.com/api
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
 
 # Domain (for SSL)
 DOMAIN=your-domain.com

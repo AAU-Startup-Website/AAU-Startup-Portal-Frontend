@@ -166,7 +166,9 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <button className="h-10 w-10 rounded-full hover:ring-2 hover:ring-primary/20 hover:scale-105 transition-all flex items-center justify-center">
                   <Avatar className="h-9 w-9 border border-gray-200">
-                    <AvatarImage src="/logo.png" alt={userName} />
+                    {user?.avatar && (
+                      <AvatarImage src={user.avatar} alt={userName} />
+                    )}
                     <AvatarFallback className="bg-primary text-white font-bold">
                       {getInitials(userName)}
                     </AvatarFallback>

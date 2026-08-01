@@ -22,6 +22,7 @@ import {
   Users,
   Trophy,
   ArrowLeft,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
 
